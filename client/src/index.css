@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(145, 25%, 97%);
+  --foreground: hsl(0, 0%, 23%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(0, 0%, 23%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(0, 0%, 23%);
+  --primary: hsl(145, 63%, 49%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(25, 95%, 53%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(145, 20%, 92%);
+  --muted-foreground: hsl(0, 0%, 45%);
+  --accent: hsl(35, 90%, 65%);
+  --accent-foreground: hsl(0, 0%, 23%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(145, 20%, 88%);
+  --input: hsl(145, 20%, 88%);
+  --ring: hsl(145, 63%, 49%);
+  --radius: 0.75rem;
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
+  --font-accent: 'Quicksand', sans-serif;
+}
+
+.dark {
+  --background: hsl(145, 15%, 8%);
+  --foreground: hsl(145, 10%, 91%);
+  --card: hsl(145, 12%, 12%);
+  --card-foreground: hsl(145, 10%, 85%);
+  --popover: hsl(145, 15%, 8%);
+  --popover-foreground: hsl(145, 10%, 91%);
+  --primary: hsl(145, 63%, 49%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(25, 85%, 45%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(145, 10%, 15%);
+  --muted-foreground: hsl(145, 5%, 50%);
+  --accent: hsl(35, 80%, 55%);
+  --accent-foreground: hsl(0, 0%, 23%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(145, 10%, 20%);
+  --input: hsl(145, 12%, 18%);
+  --ring: hsl(145, 63%, 49%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .mobile-container {
+    @apply max-w-[430px] mx-auto bg-white min-h-screen shadow-2xl;
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(145, 63%, 49%) 0%, hsl(35, 90%, 65%) 100%);
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-border shadow-sm transition-all duration-300;
+  }
+
+  .card:hover {
+    @apply shadow-md transform -translate-y-0.5;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground border-none px-6 py-4 rounded-lg font-semibold text-base cursor-pointer transition-all duration-300;
+    font-family: var(--font-accent);
+    box-shadow: 0 4px 12px hsla(145, 63%, 49%, 0.3);
+  }
+
+  .btn-primary:hover {
+    @apply transform -translate-y-0.5;
+    background: hsl(145, 63%, 45%);
+    box-shadow: 0 6px 20px hsla(145, 63%, 49%, 0.4);
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-60 pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-foreground border-2 border-border px-6 py-4 rounded-lg font-semibold text-base cursor-pointer transition-all duration-300;
+    font-family: var(--font-accent);
+  }
+
+  .btn-secondary:hover {
+    @apply bg-secondary border-primary;
+  }
+
+  .input-field {
+    @apply w-full p-4 border-2 border-border rounded-lg text-base transition-all duration-300 bg-white;
+    font-family: var(--font-sans);
+  }
+
+  .input-field:focus {
+    @apply outline-none border-primary;
+    box-shadow: 0 0 0 3px hsla(145, 63%, 49%, 0.2);
+  }
+
+  .icon-circle {
+    @apply w-14 h-14 rounded-full flex items-center justify-center text-2xl;
+  }
+
+  .service-badge {
+    @apply inline-block px-3 py-1.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground;
+  }
+
+  .price-tag {
+    @apply text-3xl font-bold text-primary;
+    font-family: var(--font-heading);
+  }
+
+  .success-message {
+    @apply bg-green-50 border-2 border-green-300 text-green-800 p-4 rounded-lg my-4;
+  }
+
+  .coming-soon-badge {
+    @apply absolute -top-2 -right-2 bg-accent text-accent-foreground px-3 py-1 rounded-xl text-xs font-semibold uppercase;
+  }
+
+  .floating-nav {
+    @apply fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-[430px] bg-white shadow-lg px-6 py-3 pb-6 z-50;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-1 text-muted-foreground transition-all duration-300 cursor-pointer;
+  }
+
+  .nav-item.active {
+    @apply text-primary;
+  }
+
+  .nav-card {
+    @apply bg-white rounded-xl p-5 shadow-lg transition-all duration-500 cursor-pointer;
+  }
+
+  .nav-card:hover {
+    @apply shadow-2xl;
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-card-animated {
+    animation: slideUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .nav-card-delay-1 {
+    animation-delay: 0.1s;
+  }
+
+  .nav-card-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .nav-card-delay-3 {
+    animation-delay: 0.3s;
+  }
+
+  .nav-card-delay-4 {
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}

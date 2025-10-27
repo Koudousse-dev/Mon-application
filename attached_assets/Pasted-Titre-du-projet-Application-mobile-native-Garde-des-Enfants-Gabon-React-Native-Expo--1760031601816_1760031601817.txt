@@ -1,0 +1,134 @@
+Titre du projet :
+Application mobile native – Garde des Enfants Gabon (React Native + Expo)
+________________________________________
+🎯 Objectif
+Créer une application mobile Android native (publiable sur Play Store) pour un service gabonais de garde d’enfants et d’aide à domicile, gérée par une structure centrale.
+L’application permet :
+•	aux parents de faire une demande de nounou,
+•	aux nounous de postuler,
+•	aux utilisateurs de consulter les prestations et tarifs,
+•	et d’être prête à intégrer un système de paiement mobile (Airtel, Moov, ou CinetPay).
+________________________________________
+⚙️ Technologie
+•	Framework : React Native + Expo
+•	Langage : JavaScript
+•	Navigation : React Navigation
+•	Base locale : SQLite (via expo-sqlite) ou JSON local (prestations.json)
+•	Stockage local : AsyncStorage
+•	Composants UI : React Native Paper ou Native Base
+•	Déploiement : Expo (génération .apk pour Play Store)
+•	Paiement (préparation) : structure prête à accueillir Airtel Money / Moov Money via lien ou API.
+________________________________________
+🧩 Structure de l’application
+1. 🏠 Écran d’accueil
+•	Nom/logo : Dieu veille sur nos enfants
+•	4 boutons principaux :
+o	“Je cherche une nounou”
+o	“Je veux postuler”
+o	“Prestations & tarifs”
+o	“Nous contacter”
+•	Un bouton secondaire : “Mon paiement” (désactivé pour le moment)
+________________________________________
+2. 👩🍼 Écran “Je cherche une nounou”
+Formulaire pour les parents :
+•	Nom complet
+•	Téléphone
+•	Adresse / Quartier
+•	Type de service recherché (menu déroulant) :
+o	Garde régulière
+o	Garde occasionnelle
+o	Week-end
+o	Aide aux devoirs
+o	Aide à la personne (mobilité réduite)
+•	Horaires souhaités (de ... à ...)
+•	Nombre d’enfants
+•	Forfait choisi (tiré du fichier prestations.json)
+•	Champ “Commentaires”
+🟢 Action :
+•	Bouton “Envoyer ma demande” → sauvegarde dans la base locale demandes.sqlite.
+•	Message de confirmation :
+“Votre demande a bien été enregistrée. Notre équipe vous contactera sous peu.”
+________________________________________
+3. 🧑‍💼 Écran “Je veux postuler comme nounou”
+Formulaire :
+•	Nom complet
+•	Téléphone
+•	Adresse / Quartier
+•	Expérience (texte libre)
+•	Type de poste :
+o	Nounou
+o	Aide aux devoirs
+o	Aide à la personne
+•	Disponibilités
+•	Téléversement de document (photo, CV, CNI)
+🟢 Action :
+•	Sauvegarde locale (candidatures.sqlite)
+•	Message de confirmation :
+“Votre candidature a été enregistrée. Nous vous contacterons après examen.”
+________________________________________
+4. 💼 Écran “Prestations & tarifs”
+Affiche la liste des prestations (tirées du fichier prestations.json ou table prestations) :
+| Nom | Durée | Prix (FCFA) |
+🟢 Action :
+•	Bouton “Choisir cette prestation”
+→ préremplit le formulaire parent avec le bon tarif.
+•	Bouton “Procéder au paiement” (inactif pour le moment, mais déjà présent dans l’interface).
+________________________________________
+5. 💳 Écran “Mon paiement” (préparé mais inactif)
+Cet écran ne gère pas encore de paiements réels, mais il contient déjà :
+•	Section “Paiements disponibles à venir” :
+o	Airtel Money
+o	Moov Money
+o	CinetPay
+•	Message :
+“Le paiement mobile sera bientôt disponible. Vous pourrez bientôt régler vos prestations directement depuis l’application.”
+•	Bouton désactivé :
+•	<Button title="Payer maintenant" disabled onPress={() => alert('Paiement à venir')} />
+Ce bouton est là uniquement pour que l’architecture de l’app soit prête à accueillir la future intégration.
+________________________________________
+6. 📞 Écran “Nous contacter”
+•	Email : contact@gardedesenfantsgabon.com
+•	Téléphone : +241 …
+•	Formulaire de message simple :
+o	Nom
+o	Téléphone
+o	Message
+________________________________________
+7. 🔐 Écran “Administration interne” (facultatif)
+•	Authentification simple (mot de passe).
+•	Affichage des données enregistrées :
+o	Liste des candidatures
+o	Liste des demandes de parents
+o	Statut du paiement (en attente / payé)
+________________________________________
+🗄️ Base de données
+•	prestations.json (modifiables depuis Excel)
+•	demandes.sqlite (parents)
+•	candidatures.sqlite (nounous)
+•	paiements.sqlite (structure préparée avec colonnes : id, montant, méthode, statut)
+________________________________________
+💳 Structure de paiement (préparée pour future intégration)
+L’app doit contenir un dossier payment/ avec :
+•	payment.js → fichier contenant une fonction prête à recevoir un lien de paiement ou une API.
+•	export const processPayment = (amount, method) => {
+•	  // Placeholder: cette fonction sera connectée plus tard à Airtel, Moov, ou CinetPay
+•	  alert(`Paiement de ${amount} FCFA via ${method} (en attente d'activation).`);
+•	};
+Plus tard, il suffira de remplacer le contenu de cette fonction par :
+•	une redirection vers un lien de paiement (Airtel Money),
+•	ou un appel API de CinetPay.
+👉 Tu n’auras rien à reconstruire : le code sera déjà en place.
+________________________________________
+🎨 Style et interface
+•	Couleurs : rose clair, beige, doré, blanc.
+•	Design doux, chaleureux, rassurant.
+•	Icônes de bébés, familles, soins.
+•	Boutons arrondis, grands et lisibles.
+•	Compatible Android 9+.
+________________________________________
+🌍 Déploiement
+1.	Tester avec Expo Go sur téléphone.
+2.	Générer le fichier .apk :
+3.	eas build -p android --profile preview
+4.	Publier sur Google Play Store.
+5.	Plus tard, intégrer le paiement via l’API du prestataire local.

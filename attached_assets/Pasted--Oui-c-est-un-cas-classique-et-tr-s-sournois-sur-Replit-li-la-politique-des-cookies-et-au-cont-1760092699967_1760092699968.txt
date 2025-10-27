@@ -1,0 +1,82 @@
+
+Oui, c’est un cas classique et très sournois sur Replit, lié à la politique des cookies et au contexte cross-origin (CORS) entre ton frontend et ton backend hébergés sur des sous-domaines différents (<ton-projet>.replit.app et <ton-projet>--server.repl.co, etc.).
+Voici ce qui se passe réellement 👇
+________________________________________
+🔍 Diagnostic technique
+✅ En tests Playwright :
+Playwright tourne en local, sans restrictions CORS, sans SameSite strict, et considère ton frontend et backend comme le même domaine → la requête POST passe.
+❌ En vrais navigateurs :
+Les navigateurs modernes bloquent la requête POST /api/auth/login dès que :
+•	le cookie de session ou le header Set-Cookie est refusé pour des raisons de sécurité ;
+•	ou la requête est perçue comme cross-site (frontend et backend sur des origines différentes).
+C’est exactement ton cas sur Replit :
+•	Replit te donne un sous-domaine distinct pour le frontend et le backend Express (même si tu ne le vois pas directement) ;
+•	donc, le cookie de session n’est pas envoyé par le navigateur.
+Résultat :
+→ Aucune requête POST n’arrive, car le navigateur la bloque avant même l’envoi réseau.
+C’est pourquoi tu ne vois rien dans les logs backend.
+________________________________________
+⚙️ Solutions possibles
+🩹 Option 1 — Désactiver SameSite et rendre le cookie cross-site
+Modifie ta config de session :
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "dev-secret-only-for-development",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // ⚠️ true seulement si HTTPS
+      httpOnly: true,
+      sameSite: "none", // <--- critique sur Replit
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+  })
+);
+⚠️ Sur Replit, sameSite: 'lax' bloque les cookies inter-domaines.
+Utilise sameSite: 'none' et secure: false si tu n’as pas de HTTPS local complet.
+________________________________________
+🧱 Option 2 — Forcer le proxy sur le même domaine
+Si ton frontend et backend tournent dans le même projet Replit, configure un proxy côté React :
+// package.json (côté React)
+"proxy": "http://localhost:3000"
+Ainsi, /api/auth/login est appelé localement et non cross-domain.
+________________________________________
+🌐 Option 3 — Activer CORS complet
+Ajoute :
+import cors from "cors";
+
+app.use(cors({
+  origin: true, // ou préciser ton URL frontend exacte
+  credentials: true,
+}));
+Et garde credentials: 'include' dans ton fetch.
+________________________________________
+🔐 Option 4 — Vérifie le HTTPS Replit
+Si ton app tourne sur https://, mets secure: true :
+cookie: {
+  secure: true,
+  sameSite: "none",
+  httpOnly: true,
+}
+Sinon le cookie n’est jamais stocké.
+________________________________________
+🧠 Pourquoi les GET passent mais pas les POST ?
+Les GET /api/auth/user ne nécessitent pas de cookies en écriture, donc le navigateur les laisse passer.
+Mais pour POST /api/auth/login, il faut envoyer un cookie et écrire la session, ce que le navigateur bloque sans la config sameSite:'none'.
+________________________________________
+✅ Résumé des correctifs à tester
+1.	Ajoute sameSite: 'none' et secure: false (ou true si HTTPS).
+2.	Vérifie que credentials: 'include' est bien dans ton fetch.
+3.	Active CORS avec credentials: true.
+4.	Si React et Express sont dans le même Repl, mets "proxy": "http://localhost:3000" dans le frontend.
+________________________________________
+🧪 Commande de test rapide
+Ouvre la console navigateur et exécute :
+fetch('/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ username: 'test', password: 'test' })
+})
+→ Si la requête n’apparaît pas dans Network, le blocage vient bien de la politique SameSite/CORS.
+
