@@ -33,26 +33,26 @@ if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable must be set in production");
 }
 
-// Session configuration - Fix for Replit cross-site cookie issue
-// Replit uses HTTPS even in dev, so we need sameSite="none" + secure=true
-// In local dev (HTTP), we use sameSite="lax" + secure=false
-const isSecureContext = !!process.env.REPL_ID || process.env.NODE_ENV === "production";
+// Session configuration adaptée à Render
+app.set("trust proxy", 1); // important derrière le proxy Render
 
-// Use PostgreSQL for session storage (required for Autoscale deployments)
+const isProduction = process.env.NODE_ENV === "production";
+
+// Utilisation de PostgreSQL comme store de sessions
 app.use(
   session({
     store: new PgStore({
       conString: process.env.DATABASE_URL,
-      createTableIfMissing: true, // Auto-create session table if needed
+      createTableIfMissing: true, // crée la table session si besoin
     }),
     secret: process.env.SESSION_SECRET || "dev-secret-only-for-development",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: isSecureContext,
       httpOnly: true,
-      sameSite: isSecureContext ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      secure: isProduction, // cookie sécurisé uniquement en prod
+      sameSite: isProduction ? "lax" : "lax", // "lax" suffit pour Render
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     },
   })
 );
@@ -60,6 +60,7 @@ app.use(
 // Initialize passport
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 app.use((req, res, next) => {
   const start = Date.now();
