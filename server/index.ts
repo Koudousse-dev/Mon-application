@@ -6,8 +6,23 @@ import passport from "./auth";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ensureAdminExists } from "./init-db";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 
 const app = express();
+// 🛡️ Security middlewares
+app.use(helmet()); // Protège contre la plupart des attaques HTTP
+
+// 🚦 Limite le nombre de requêtes par IP pour éviter les abus
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limite à 100 requêtes par IP
+  standardHeaders: true, // ajoute les headers RateLimit-*
+  legacyHeaders: false,
+});
+app.use(limiter);
+
 const PgStore = connectPgSimple(session);
 
 // Trust Replit's reverse proxy - CRITICAL for secure cookies to work
