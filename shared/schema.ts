@@ -185,6 +185,7 @@ export const prestations = pgTable("prestations", {
   horaireFin: text("horaire_fin"),
   prix: integer("prix").notNull(),
   unite: text("unite").notNull().default("FCFA"),
+  image: text("image"), // ✅ nouveau champ pour l’URL de l’image
   actif: boolean("actif").default(true),
   dateCreation: timestamp("date_creation").defaultNow(),
 });
