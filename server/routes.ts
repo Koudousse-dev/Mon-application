@@ -789,8 +789,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const prestations = await storage.getPrestations();
       res.json(prestations);
-    } catch (error) {
-      res.status(500).json({ message: "Erreur serveur" });
+    } catch (err) {
+      console.error("❌ Erreur dans /api/prestations :", err);
+      res.status(500).json({
+        message: "Erreur serveur",
+        error: err?.message || String(err),
+        stack: err?.stack,
+      });
     }
   });
 
