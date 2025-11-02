@@ -79,6 +79,14 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// ✅ Health check route for Render monitoring
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+  });
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -110,7 +118,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 (async () => {
   // Initialize database and ensure admin user exists
   await ensureAdminExists();
@@ -131,15 +138,6 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-
-  // ✅ Health check route for Render monitoring
-  app.get("/health", (req, res) => {
-    res.json({
-      status: "ok",
-      uptime: process.uptime(),
-      timestamp: Date.now(),
-    });
-  });
 
   // ✅ Launch the server
   const port = parseInt(process.env.PORT || '5000', 10);
