@@ -45,6 +45,7 @@ import type {
   Notification,
   Employee
 } from "@shared/schema";
+import AdminImageUploader from "@/components/AdminImageUploader";
 
 function NotificationCenter({ 
   notifications, 
@@ -611,6 +612,13 @@ export default function AdminDashboard() {
   return (
     <div className="mobile-container min-h-screen bg-background pb-20">
       <div className="p-4 sm:p-6 w-full">
+      {/* === Bloc test : changement d’image === */}
+<div style={{ marginBottom: "30px", textAlign: "center" }}>
+  <h2 className="text-xl font-bold mb-2 text-primary">
+    🖼️ Modifier une image de la page
+  </h2>
+  <AdminImageUploader imageUrl="/attached_assets/stock_images/happy_african_childr_f11fd4ba.jpg" />
+</div>
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
           <div>
             <h1 className="text-2xl font-heading font-bold text-primary">

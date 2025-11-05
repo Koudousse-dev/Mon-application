@@ -8,6 +8,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { ensureAdminExists } from "./init-db";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import uploadRoute from "./routes/uploadRoute";
 
 
 const app = express();
@@ -117,6 +118,8 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use("/api/upload", uploadRoute);
 
 (async () => {
   // Initialize database and ensure admin user exists
