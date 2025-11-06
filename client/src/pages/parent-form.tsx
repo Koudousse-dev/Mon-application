@@ -23,11 +23,24 @@ export default function ParentForm() {
   const { data: prestations = [], isLoading: prestationsLoading } = useQuery<Prestation[]>({
     queryKey: ["/api/prestations"],
   });
-  
+
+  // ✅ Récupère les infos de l’utilisateur connecté
+  const { data: userData } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/user");
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
+
+  // ✅ Vérifie si c’est un admin
+  const isAdmin = userData?.user?.role === "admin";
+
   // Parse URL query parameters
   const urlParams = new URLSearchParams(searchParams);
-  const preSelectedService = urlParams.get('service') || "";
-  const preSelectedForfait = urlParams.get('forfait') || urlParams.get('service') || "";
+  const preSelectedService = urlParams.get("service") || "";
+  const preSelectedForfait = urlParams.get("forfait") || urlParams.get("service") || "";
 
   const form = useForm({
     resolver: zodResolver(insertParentRequestSchema),
@@ -43,30 +56,27 @@ export default function ParentForm() {
       commentaires: "",
     },
   });
-  
+
   // Update form values when URL params and prestations are loaded
   useEffect(() => {
     if (preSelectedService) {
-      form.setValue('typeService', preSelectedService);
+      form.setValue("typeService", preSelectedService);
     }
-    
-    // Set forfait only if it exists in the loaded prestations
+
     if (preSelectedForfait && !prestationsLoading && prestations.length > 0) {
-      const validForfait = prestations.find(p => p.id === preSelectedForfait);
+      const validForfait = prestations.find((p) => p.id === preSelectedForfait);
       if (validForfait) {
-        form.setValue('forfait', preSelectedForfait);
+        form.setValue("forfait", preSelectedForfait);
       }
     }
   }, [preSelectedService, preSelectedForfait, prestations, prestationsLoading, form]);
 
   const createRequestMutation = useMutation({
     mutationFn: async (data: any) => {
-      // Try to submit to server first
       try {
         const response = await apiRequest("POST", "/api/parent-requests", data);
         return await response.json();
       } catch (error) {
-        // If server is offline, store locally
         await localStorage.storeParentRequest(data);
         return { offline: true };
       }
@@ -121,28 +131,12 @@ export default function ParentForm() {
 
   return (
     <div className="mobile-container min-h-screen bg-background">
-      {/* Header with Editable Image */}
-<div className="relative overflow-hidden">
-  <img
-  src="/assets/stock_images/happy_african_childr_f11fd4ba.jpg"
-  alt="Bannière - Je cherche une nounou"
-  className="w-full h-48 object-cover"
-/>
-
-  <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 flex items-end p-4 sm:p-6">
-    <div className="flex items-center gap-4 w-full">
-      <Link href="/">
-        <Button variant="ghost" size="icon" className="text-white" data-testid="button-back">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-      </Link>
-      <div>
-        <h2 className="text-xl font-bold text-white font-heading">Je cherche une nounou</h2>
-        <p className="text-sm text-white/90">Remplissez le formulaire ci-dessous</p>
-      </div>
-    </div>
-  </div>
-</div>
+      {/* ✅ Header with Editable Image */}
+      <EditableBanner
+        imageUrl={parentFormImage}
+        alt="Bannière - Je cherche une nounou"
+        isAdmin={isAdmin}
+      />
 
       {/* Form Content */}
       <div className="p-4 sm:p-6 pb-32 w-full">
@@ -164,12 +158,7 @@ export default function ParentForm() {
                     <FormItem>
                       <FormLabel>Nom complet *</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="Votre nom complet" 
-                          className="input-field"
-                          data-testid="input-nom"
-                        />
+                        <Input {...field} placeholder="Votre nom complet" className="input-field" data-testid="input-nom" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -183,12 +172,7 @@ export default function ParentForm() {
                     <FormItem>
                       <FormLabel>Téléphone *</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="+241 XX XX XX XX" 
-                          className="input-field"
-                          data-testid="input-telephone"
-                        />
+                        <Input {...field} placeholder="+241 XX XX XX XX" className="input-field" data-testid="input-telephone" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -202,12 +186,7 @@ export default function ParentForm() {
                     <FormItem>
                       <FormLabel>Adresse / Quartier *</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="Votre quartier" 
-                          className="input-field"
-                          data-testid="input-adresse"
-                        />
+                        <Input {...field} placeholder="Votre quartier" className="input-field" data-testid="input-adresse" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -258,12 +237,7 @@ export default function ParentForm() {
                       <FormItem>
                         <FormLabel>Heure de début</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            type="time" 
-                            className="input-field"
-                            data-testid="input-horaire-debut"
-                          />
+                          <Input {...field} type="time" className="input-field" data-testid="input-horaire-debut" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -276,12 +250,7 @@ export default function ParentForm() {
                       <FormItem>
                         <FormLabel>Heure de fin</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            type="time" 
-                            className="input-field"
-                            data-testid="input-horaire-fin"
-                          />
+                          <Input {...field} type="time" className="input-field" data-testid="input-horaire-fin" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -327,13 +296,18 @@ export default function ParentForm() {
                         </FormControl>
                         <SelectContent>
                           {prestationsLoading ? (
-                            <SelectItem value="loading" disabled>Chargement...</SelectItem>
+                            <SelectItem value="loading" disabled>
+                              Chargement...
+                            </SelectItem>
                           ) : prestations.length === 0 ? (
-                            <SelectItem value="empty" disabled>Aucun forfait disponible</SelectItem>
+                            <SelectItem value="empty" disabled>
+                              Aucun forfait disponible
+                            </SelectItem>
                           ) : (
                             prestations.map((prestation) => (
                               <SelectItem key={prestation.id} value={prestation.id}>
-                                {prestation.nom} - {prestation.prix > 0 ? `${prestation.prix.toLocaleString()} ${prestation.unite}` : prestation.unite}
+                                {prestation.nom} -{" "}
+                                {prestation.prix > 0 ? `${prestation.prix.toLocaleString()} ${prestation.unite}` : prestation.unite}
                               </SelectItem>
                             ))
                           )}
@@ -351,13 +325,7 @@ export default function ParentForm() {
                     <FormItem>
                       <FormLabel>Commentaires additionnels</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          {...field} 
-                          placeholder="Informations supplémentaires..." 
-                          className="input-field"
-                          rows={4}
-                          data-testid="textarea-commentaires"
-                        />
+                        <Textarea {...field} placeholder="Informations supplémentaires..." className="input-field" rows={4} data-testid="textarea-commentaires" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -367,9 +335,9 @@ export default function ParentForm() {
             </Card>
 
             {/* Submit Button */}
-            <Button 
-              type="submit" 
-              className="btn-primary w-full" 
+            <Button
+              type="submit"
+              className="btn-primary w-full"
               disabled={createRequestMutation.isPending}
               data-testid="button-submit"
             >
