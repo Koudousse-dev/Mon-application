@@ -13,8 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { insertParentRequestSchema, type Prestation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
-import parentFormImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jpg";
 import EditableBanner from "@/components/EditableBanner";
+const parentFormImage = "/assets/stock_images/happy_african_childr_f11fd4ba.jpg";
 
 export default function ParentForm() {
   const [showSuccess, setShowSuccess] = useState(false);
