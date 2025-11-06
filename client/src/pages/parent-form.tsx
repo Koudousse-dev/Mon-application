@@ -123,11 +123,11 @@ export default function ParentForm() {
     <div className="mobile-container min-h-screen bg-background">
       {/* Header with Editable Image */}
 <div className="relative overflow-hidden">
-  <EditableBanner
-    imageUrl="/attached_assets/stock_images/happy_african_childr_f11fd4ba.jpg"
-    alt="Bannière - Je cherche une nounou"
-    isAdmin={true}
-  />
+  <img
+  src="/assets/stock_images/happy_african_childr_f11fd4ba.jpg"
+  alt="Bannière - Je cherche une nounou"
+  className="w-full h-48 object-cover"
+/>
 
   <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 flex items-end p-4 sm:p-6">
     <div className="flex items-center gap-4 w-full">
