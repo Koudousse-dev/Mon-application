@@ -1,85 +1,46 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface EditableBannerProps {
   imageUrl: string;
-  alt?: string;
+  alt: string;
   isAdmin?: boolean;
 }
 
-const EditableBanner: React.FC<EditableBannerProps> = ({
-  imageUrl,
-  alt = "Bannière",
-  isAdmin = false,
-}) => {
-  const [preview, setPreview] = useState(imageUrl);
-  const [uploading, setUploading] = useState(false);
+/**
+ * ✅ EditableBanner corrigé pour Render :
+ * - Utilise le dossier public `/assets/...`
+ * - Permet à l’admin de changer l’image (à implémenter ensuite)
+ * - Fonctionne aussi sans compte admin (lecture simple)
+ */
+const EditableBanner: React.FC<EditableBannerProps> = ({ imageUrl, alt, isAdmin = false }) => {
+  const [currentImage, setCurrentImage] = useState(imageUrl);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // ✅ Correction principale : forcer le bon chemin public
+  const resolvedUrl = currentImage?.startsWith("/assets/")
+    ? currentImage
+    : `/assets/${currentImage?.replace(/^\/+/, "")}`;
 
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("image", file);
+  const handleChange = () => {
+    if (!isAdmin) return;
 
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.success && data.fileName) {
-        // Met à jour l'image affichée
-        const newImageUrl = `/attached_assets/stock_images/${data.fileName}`;
-        setPreview(newImageUrl);
-        alert("✅ Image mise à jour avec succès !");
-      } else {
-        alert("❌ Erreur lors de la mise à jour de l'image");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("❌ Une erreur est survenue pendant l’envoi.");
-    } finally {
-      setUploading(false);
-    }
+    // Plus tard : on ouvrira un sélecteur ou un upload ici
+    alert("Fonction de changement d’image à venir !");
   };
 
   return (
-    <div style={{ position: "relative", textAlign: "center" }}>
+    <div className="relative overflow-hidden">
       <img
-        src={preview}
+        src={resolvedUrl}
         alt={alt}
-        style={{
-          width: "100%",
-          height: "auto",
-          borderRadius: "0.5rem",
-          objectFit: "cover",
-        }}
+        className="w-full h-48 object-cover"
       />
-
       {isAdmin && (
-        <label
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            backgroundColor: "#16a34a",
-            color: "white",
-            padding: "6px 10px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "14px",
-          }}
-        >
-          {uploading ? "Chargement..." : "Changer l’image"}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-          />
-        </label>
+        <div className="absolute bottom-2 right-2">
+          <Button size="sm" onClick={handleChange} className="bg-primary text-white">
+            🖼️ Changer l’image
+          </Button>
+        </div>
       )}
     </div>
   );
