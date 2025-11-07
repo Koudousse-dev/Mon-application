@@ -1,91 +1,83 @@
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Image as ImageIcon } from "lucide-react";
 
 interface EditableBannerProps {
   imageUrl: string;
-  alt: string;
+  alt?: string;
   isAdmin?: boolean;
+  onFileSelected?: (file: File) => void;
+  children?: React.ReactNode;
 }
 
-/**
- * ✅ EditableBanner final :
- * - Affiche une image (stockée dans /public/assets)
- * - Permet à l’administrateur de la remplacer via /api/upload
- * - Se met à jour sans recharger la page
- */
-const EditableBanner: React.FC<EditableBannerProps> = ({ imageUrl, alt, isAdmin = false }) => {
-  const [currentImage, setCurrentImage] = useState(imageUrl);
-  const [uploading, setUploading] = useState(false);
+export default function EditableBanner({
+  imageUrl,
+  alt,
+  isAdmin,
+  onFileSelected,
+  children,
+}: EditableBannerProps) {
+  const [preview, setPreview] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Correction du chemin d’accès public
-  const resolvedUrl = currentImage?.startsWith("/assets/")
-    ? currentImage
-    : `/assets/${currentImage?.replace(/^\/+/, "")}`;
+  // Nettoyage mémoire (important)
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
 
-  // Quand l’admin choisit une nouvelle image
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
+    const url = URL.createObjectURL(file);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(url);
 
-      // 🔥 Appel API backend /api/upload
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (result.success && result.fileName) {
-        setCurrentImage(`/assets/stock_images/${result.fileName}`);
-      } else {
-        alert("Échec de l’upload de l’image.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors du téléchargement de l’image.");
-    } finally {
-      setUploading(false);
+    // Optionnel : callback externe
+    if (onFileSelected) {
+      onFileSelected(file);
     }
+  };
+
+  const openFileDialog = () => {
+    inputRef.current?.click();
   };
 
   return (
     <div className="relative overflow-hidden">
+      {/* ✅ L’image principale ou l’aperçu choisi */}
       <img
-        src={resolvedUrl}
-        alt={alt}
-        className="w-full h-48 object-cover"
+        src={preview || imageUrl}
+        alt={alt || "Bannière"}
+        className="w-full h-48 object-cover transition-all duration-300"
       />
 
-      {/* ✅ Si l’utilisateur est admin, on affiche le bouton */}
+      {/* ✅ Le texte superposé (passé en children) */}
+      <div className="absolute inset-0 z-10">{children}</div>
+
+      {/* ✅ Bouton admin */}
       {isAdmin && (
-        <div className="absolute bottom-2 right-2 flex flex-col items-end">
-          <label htmlFor="banner-upload" className="cursor-pointer">
-            <Button
-              asChild
-              size="sm"
-              className="bg-primary text-white hover:bg-primary/90"
-              disabled={uploading}
-            >
-              <span>
-                {uploading ? "Chargement..." : "🖼️ Changer l’image"}
-              </span>
-            </Button>
-          </label>
+        <div className="absolute bottom-4 right-4 z-20">
           <input
-            id="banner-upload"
+            ref={inputRef}
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={handleFileChange}
+            onChange={handleChange}
           />
+          <Button
+            onClick={openFileDialog}
+            className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
+          >
+            <ImageIcon className="w-4 h-4" />
+            Changer l’image
+          </Button>
         </div>
       )}
     </div>
   );
-};
-
-export default EditableBanner;
+}
