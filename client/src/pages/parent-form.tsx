@@ -14,6 +14,7 @@ import { insertParentRequestSchema, type Prestation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import EditableBanner from "@/components/EditableBanner";
+
 const parentFormImage = "/assets/stock_images/happy_african_childr_f11fd4ba.jpg";
 
 export default function ParentForm() {
@@ -131,12 +132,26 @@ export default function ParentForm() {
 
   return (
     <div className="mobile-container min-h-screen bg-background">
-      {/* ✅ Header with Editable Image */}
+      {/* ✅ Header avec texte et bouton admin */}
       <EditableBanner
         imageUrl={parentFormImage}
         alt="Bannière - Je cherche une nounou"
         isAdmin={isAdmin}
-      />
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 flex items-end p-4 sm:p-6">
+          <div className="flex items-center gap-4 w-full">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="text-white" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h2 className="text-xl font-bold text-white font-heading">Je cherche une nounou</h2>
+              <p className="text-sm text-white/90">Remplissez le formulaire ci-dessous</p>
+            </div>
+          </div>
+        </div>
+      </EditableBanner>
 
       {/* Form Content */}
       <div className="p-4 sm:p-6 pb-32 w-full">
