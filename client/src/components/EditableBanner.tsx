@@ -25,7 +25,6 @@ export default function EditableBanner({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const openFileDialog = () => inputRef.current?.click();
@@ -46,35 +45,6 @@ export default function EditableBanner({
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const getCroppedImage = async (): Promise<string> => {
-    if (!preview || !croppedAreaPixels) return preview;
-
-    const image = await createImage(preview);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    const { width, height, x, y } = croppedAreaPixels;
-    canvas.width = width;
-    canvas.height = height;
-
-    if (ctx) {
-      ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
-    }
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const croppedFile = new File([blob], selectedFile?.name || "cropped.jpg", {
-            type: "image/jpeg",
-          });
-          const croppedUrl = URL.createObjectURL(croppedFile);
-          if (onFileSelected) onFileSelected(croppedFile);
-          resolve(croppedUrl);
-        }
-      }, "image/jpeg");
-    });
-  };
-
   const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
       const img = new Image();
@@ -83,10 +53,33 @@ export default function EditableBanner({
       img.src = url;
     });
 
+  const getCroppedImage = async (): Promise<string> => {
+    if (!preview || !croppedAreaPixels) return preview;
+
+    const image = await createImage(preview);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const { width, height, x, y } = croppedAreaPixels;
+    canvas.width = width;
+    canvas.height = height;
+    if (ctx) {
+      ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+    }
+    // ✅ Utilisation de toDataURL (fiable sur mobile)
+    return canvas.toDataURL("image/jpeg", 0.9);
+  };
+
   const handleValidateCrop = async () => {
-    const croppedUrl = await getCroppedImage();
-    setPreview(croppedUrl);
+    const croppedBase64 = await getCroppedImage();
+    setPreview(croppedBase64);
     setCropping(false);
+
+    // Envoie du fichier croppé vers le parent si besoin
+    if (onFileSelected && selectedFile) {
+      const croppedBlob = await (await fetch(croppedBase64)).blob();
+      const croppedFile = new File([croppedBlob], selectedFile.name, { type: "image/jpeg" });
+      onFileSelected(croppedFile);
+    }
   };
 
   return (
