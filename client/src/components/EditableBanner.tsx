@@ -1,145 +1,88 @@
-import { useState, useRef, useCallback } from "react";
-import Cropper from "react-easy-crop";
-import { Button } from "@/components/ui/button";
-import { Image as ImageIcon, Check, X } from "lucide-react";
-import { Dialog } from "@headlessui/react";
+import React, { useState } from "react";
 
 interface EditableBannerProps {
   imageUrl: string;
-  alt?: string;
-  isAdmin?: boolean;
-  onFileSelected?: (file: File) => void;
-  children?: React.ReactNode;
+  alt: string;
+  isAdmin: boolean;
+  title?: string;
+  subtitle?: string;
 }
 
 export default function EditableBanner({
   imageUrl,
   alt,
   isAdmin,
-  onFileSelected,
-  children,
+  title,
+  subtitle,
 }: EditableBannerProps) {
-  const [preview, setPreview] = useState<string | null>(null);
-  const [cropping, setCropping] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [currentImage, setCurrentImage] = useState(imageUrl);
+  const [uploading, setUploading] = useState(false);
 
-  const openFileDialog = () => inputRef.current?.click();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setPreview(event.target?.result as string);
-      setSelectedFile(file);
-      setCropping(true);
-    };
-    reader.readAsDataURL(file);
-  };
 
-  const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+    setUploading(true);
 
-  const createImage = (url: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.addEventListener("load", () => resolve(img));
-      img.addEventListener("error", (error) => reject(error));
-      img.src = url;
-    });
+    try {
+      const formData = new FormData();
+      formData.append("banner", file);
 
-  const getCroppedImage = async (): Promise<string> => {
-    if (!preview || !croppedAreaPixels) return preview;
+      const response = await fetch("/api/upload-banner", {
+        method: "POST",
+        body: formData,
+      });
 
-    const image = await createImage(preview);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const { width, height, x, y } = croppedAreaPixels;
-    canvas.width = width;
-    canvas.height = height;
-    if (ctx) {
-      ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
-    }
-    // ✅ Utilisation de toDataURL (fiable sur mobile)
-    return canvas.toDataURL("image/jpeg", 0.9);
-  };
-
-  const handleValidateCrop = async () => {
-    const croppedBase64 = await getCroppedImage();
-    setPreview(croppedBase64);
-    setCropping(false);
-
-    // Envoie du fichier croppé vers le parent si besoin
-    if (onFileSelected && selectedFile) {
-      const croppedBlob = await (await fetch(croppedBase64)).blob();
-      const croppedFile = new File([croppedBlob], selectedFile.name, { type: "image/jpeg" });
-      onFileSelected(croppedFile);
+      const data = await response.json();
+      if (data.url) {
+        setCurrentImage(data.url);
+      } else {
+        alert("Erreur : impossible de récupérer l’URL de l’image");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de l’envoi du fichier.");
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
     <div className="relative overflow-hidden">
-      {/* ✅ Image principale */}
       <img
-        key={preview || imageUrl}
-        src={preview || imageUrl}
-        alt={alt || "Bannière"}
-        className="w-full h-48 object-cover transition-all duration-300"
+        src={currentImage}
+        alt={alt}
+        className="w-full h-48 object-cover transition-all duration-500"
       />
 
-      {/* ✅ Texte superposé */}
-      <div className="absolute inset-0 z-10">{children}</div>
-
-      {/* ✅ Bouton admin */}
-      {isAdmin && (
-        <div className="absolute bottom-4 right-4 z-20">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleChange}
-          />
-          <Button
-            onClick={openFileDialog}
-            className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
-          >
-            <ImageIcon className="w-4 h-4" />
-            Changer l’image
-          </Button>
+      {/* ✅ Superposition du texte */}
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 flex items-end p-4 sm:p-6">
+        <div>
+          {title && (
+            <h2 className="text-xl font-bold text-white font-heading">
+              {title}
+            </h2>
+          )}
+          {subtitle && (
+            <p className="text-sm text-white/90">{subtitle}</p>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* ✅ Fenêtre de recadrage */}
-      {cropping && (
-        <Dialog open={cropping} onClose={() => setCropping(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-white rounded-lg p-4 w-[90%] max-w-md">
-            <div className="relative w-full h-64 bg-gray-200">
-              <Cropper
-                image={preview || ""}
-                crop={crop}
-                zoom={zoom}
-                aspect={16 / 9}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={() => setCropping(false)}>
-                <X className="w-4 h-4 mr-2" /> Annuler
-              </Button>
-              <Button onClick={handleValidateCrop} className="bg-green-600 text-white hover:bg-green-700">
-                <Check className="w-4 h-4 mr-2" /> Valider
-              </Button>
-            </div>
-          </div>
-        </Dialog>
+      {/* ✅ Bouton d’édition visible uniquement pour l’admin */}
+      {isAdmin && (
+        <div className="absolute top-3 right-3">
+          <label className="bg-white text-primary text-sm px-3 py-1 rounded cursor-pointer hover:bg-primary hover:text-white transition">
+            🖼️ Changer l’image
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
+          </label>
+        </div>
       )}
     </div>
   );

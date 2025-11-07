@@ -9,6 +9,9 @@ import { ensureAdminExists } from "./init-db";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import uploadRoute from "./routes/uploadRoute";
+import bannerRoutes from "./routes/bannerRoutes";
+import path from "path";
+
 
 
 const app = express();
@@ -120,6 +123,12 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/upload", uploadRoute);
+// ✅ Nouvelle route d’upload de bannières
+app.use("/api/upload-banner", bannerRoutes);
+
+// ✅ Permet d'accéder aux fichiers uploadés publiquement
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 
 (async () => {
   // Initialize database and ensure admin user exists
