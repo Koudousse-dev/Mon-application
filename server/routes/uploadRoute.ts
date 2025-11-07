@@ -1,45 +1,48 @@
 import express from "express";
 import multer from "multer";
-import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 
 const router = express.Router();
 
-const uploadDir = path.resolve(import.meta.dirname, "..", "client", "src", "assets", "stock_images");
-// ou si tu veux le dossier uploads :
- // const uploadDir = path.resolve(import.meta.dirname, "..", "attached_assets", "uploads");
-
+// 📂 Répertoire de destination (assure-toi qu'il existe)
+const uploadDir = path.join(process.cwd(), "client", "public", "uploads", "banners");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.memoryStorage();
+// ⚙️ Configuration de multer
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, "banner_" + Date.now() + ext);
+  },
+});
+
 const upload = multer({ storage });
 
-router.post("/", upload.single("image"), async (req, res) => {
+// 📤 Route de téléversement de bannière
+router.post("/upload-banner", upload.single("banner"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "Aucun fichier envoyé." });
+      return res.status(400).json({ error: "Aucun fichier reçu" });
     }
 
-    const fileName = `${Date.now()}_${req.file.originalname}`;
-    const filePath = path.join(uploadDir, fileName);
+    // 🔗 URL publique pour React
+    const publicPath = `/uploads/banners/${req.file.filename}`;
+    console.log("✅ Fichier uploadé :", publicPath);
 
-    await sharp(req.file.buffer)
-      .resize(1280, 853, { fit: "cover" })
-      .toFormat("jpeg")
-      .jpeg({ quality: 85 })
-      .toFile(filePath);
-
-    return res.json({
+    res.json({
       success: true,
-      message: "Image uploadée avec succès !",
-      fileName,
+      path: publicPath, // clé utilisée côté frontend
+      url: publicPath,  // compatibilité future
     });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Erreur lors du traitement de l’image." });
+  } catch (err) {
+    console.error("Erreur upload:", err);
+    res.status(500).json({ error: "Erreur serveur pendant l’upload" });
   }
 });
 
