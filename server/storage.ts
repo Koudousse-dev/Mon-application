@@ -51,14 +51,15 @@ export interface IStorage {
   getPrestationById(id: string): Promise<Prestation | undefined>;
   updatePrestation(id: string, prestation: Partial<InsertPrestation>): Promise<Prestation>;
   deletePrestation(id: string): Promise<void>;
-  
+
   // Paramètres site
   createParametreSite(parametre: InsertParametreSite): Promise<ParametreSite>;
   getParametresSite(): Promise<ParametreSite[]>;
   getParametreSiteByCle(cle: string): Promise<ParametreSite | undefined>;
   updateParametreSite(cle: string, valeur: string): Promise<ParametreSite>;
   deleteParametreSite(cle: string): Promise<void>;
-  
+  upsertParametreSite(cle: string, valeur: string): Promise<ParametreSite>;
+
   // Employés
   createEmployee(employee: InsertEmployee): Promise<Employee>;
   getEmployees(): Promise<Employee[]>;
@@ -248,6 +249,7 @@ export class MemStorage implements IStorage {
       id,
       horaireDebut: insertPrestation.horaireDebut ?? null,
       horaireFin: insertPrestation.horaireFin ?? null,
+      image: insertPrestation.image ?? null,
       actif: true,
       dateCreation: new Date(),
     };
@@ -310,13 +312,37 @@ export class MemStorage implements IStorage {
     return updatedParametre;
   }
 
-  async deleteParametreSite(cle: string): Promise<void> {
+    async deleteParametreSite(cle: string): Promise<void> {
     const parametre = Array.from(this.parametresSite.values()).find(p => p.cle === cle);
     if (!parametre) {
       throw new Error(`Parametre with key ${cle} not found`);
     }
     this.parametresSite.delete(parametre.id);
   }
+
+    async upsertParametreSite(cle: string, valeur: string): Promise<ParametreSite> {
+      const existingEntry = Array.from(this.parametresSite.entries()).find(([, p]) => p.cle === cle);
+      if (existingEntry) {
+        const [id, parametre] = existingEntry;
+        const updatedParametre: ParametreSite = {
+          ...parametre,
+          valeur,
+          dateModification: new Date(),
+        };
+        this.parametresSite.set(id, updatedParametre);
+        return updatedParametre;
+      }
+
+      const id = randomUUID();
+      const newParametre: ParametreSite = {
+        id,
+        cle,
+        valeur,
+        dateModification: new Date(),
+      };
+      this.parametresSite.set(id, newParametre);
+      return newParametre;
+    }
 
   async createEmployee(insertEmployee: InsertEmployee): Promise<Employee> {
     const id = randomUUID();
@@ -597,12 +623,25 @@ export class DbStorage implements IStorage {
     return updatedParametre;
   }
 
-  async deleteParametreSite(cle: string): Promise<void> {
+    async deleteParametreSite(cle: string): Promise<void> {
     const result = await db.delete(parametresSite).where(eq(parametresSite.cle, cle)).returning();
     if (result.length === 0) {
       throw new Error(`Parametre with key ${cle} not found`);
     }
   }
+
+    async upsertParametreSite(cle: string, valeur: string): Promise<ParametreSite> {
+      const [parametre] = await db
+        .insert(parametresSite)
+        .values({ cle, valeur })
+        .onConflictDoUpdate({
+          target: parametresSite.cle,
+          set: { valeur, dateModification: new Date() },
+        })
+        .returning();
+
+      return parametre;
+    }
 
   async createEmployee(insertEmployee: InsertEmployee): Promise<Employee> {
     const [employee] = await db.insert(employees).values(insertEmployee).returning();

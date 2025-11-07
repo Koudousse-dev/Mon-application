@@ -14,10 +14,16 @@ import { insertParentRequestSchema, type Prestation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import parentFormImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jpg";
+import { useAdminUser } from "@/hooks/use-admin-user";
+import { useBannerImage } from "@/hooks/use-banner-image";
+import { HeroImageEditor } from "@/components/hero-image-editor";
 
 export default function ParentForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const searchParams = useSearch();
+  const { data: adminUser } = useAdminUser();
+  const isAdmin = Boolean(adminUser?.user);
+  const { heroImage, setHeroImage } = useBannerImage("parent-form", parentFormImage);
 
   const { data: prestations = [], isLoading: prestationsLoading } = useQuery<Prestation[]>({
     queryKey: ["/api/prestations"],
@@ -121,12 +127,19 @@ export default function ParentForm() {
   return (
     <div className="mobile-container min-h-screen bg-background">
       {/* Header with Image */}
-      <div className="relative overflow-hidden">
-        <img 
-          src={parentFormImage} 
-          alt="Enfants heureux" 
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative overflow-hidden">
+          <img 
+            src={heroImage} 
+            alt="Enfants heureux" 
+            className="w-full h-48 object-cover transition-all duration-300"
+          />
+          <HeroImageEditor
+            page="parent-form"
+            currentUrl={heroImage}
+            defaultUrl={parentFormImage}
+            isAdmin={isAdmin}
+            onChange={setHeroImage}
+          />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 flex items-end p-4 sm:p-6">
           <div className="flex items-center gap-4 w-full">
             <Link href="/">

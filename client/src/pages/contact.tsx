@@ -13,9 +13,15 @@ import { insertContactMessageSchema, type ParametreSite } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import contactImage from "@assets/stock_images/warm_african_mother__19616505.jpg";
+import { useAdminUser } from "@/hooks/use-admin-user";
+import { useBannerImage } from "@/hooks/use-banner-image";
+import { HeroImageEditor } from "@/components/hero-image-editor";
 
 export default function Contact() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const { data: adminUser } = useAdminUser();
+  const isAdmin = Boolean(adminUser?.user);
+  const { heroImage, setHeroImage } = useBannerImage("contact", contactImage);
 
   const { data: parametres = [], isLoading: parametresLoading } = useQuery<ParametreSite[]>({
     queryKey: ["/api/parametres-site"],
@@ -94,12 +100,19 @@ export default function Contact() {
   return (
     <div className="mobile-container min-h-screen bg-background">
       {/* Header with Image */}
-      <div className="relative overflow-hidden">
-        <img 
-          src={contactImage} 
-          alt="Contact - Famille heureuse" 
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative overflow-hidden">
+          <img 
+            src={heroImage} 
+            alt="Contact - Famille heureuse" 
+            className="w-full h-48 object-cover transition-all duration-300"
+          />
+          <HeroImageEditor
+            page="contact"
+            currentUrl={heroImage}
+            defaultUrl={contactImage}
+            isAdmin={isAdmin}
+            onChange={setHeroImage}
+          />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-primary/40 flex items-end p-6">
           <div className="flex items-center gap-4 w-full">
             <Link href="/">

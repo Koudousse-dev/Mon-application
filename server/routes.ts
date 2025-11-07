@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import passport from "./auth";
 import { isAuthenticated } from "./auth";
@@ -6,6 +6,25 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import { Client } from "@replit/object-storage";
+import fs from "fs";
+import path from "path";
+
+const UPLOADS_ROOT = path.resolve(import.meta.dirname, "..", "uploads");
+const BANNERS_DIR = path.join(UPLOADS_ROOT, "banners");
+
+if (!fs.existsSync(BANNERS_DIR)) {
+  fs.mkdirSync(BANNERS_DIR, { recursive: true });
+}
+
+const fsPromises = fs.promises;
+
+const BANNER_PARAM_KEYS = {
+  "parent-form": "banner-parent-form",
+  "nanny-form": "banner-nanny-form",
+  contact: "banner-contact",
+} as const;
+
+type BannerPage = keyof typeof BANNER_PARAM_KEYS;
 
 // Initialize Object Storage client (optional - requires bucket configuration)
 // Set ENABLE_OBJECT_STORAGE=true environment variable to use Object Storage
@@ -41,6 +60,9 @@ import { findBestMatches, getBestMatchForRequest, calculateMatchScore } from "@s
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Serve uploaded assets
+  app.use("/uploads", express.static(UPLOADS_ROOT));
   
   // Simple HTML login page (no React, no frameworks)
   app.get("/simple-login", (req, res) => {
@@ -292,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         const { passwordHash, ...userWithoutPassword } = user;
         return res.json({ user: userWithoutPassword });
-      });
+    });
     })(req, res, next);
   });
 
@@ -402,9 +424,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cb(new Error('Type de fichier non autorisé. Seuls les PDF, JPG et PNG sont acceptés.'));
       }
     },
-  });
+    });
 
-  // File upload route - stores files in Object Storage if available, otherwise base64
+    const bannerUpload = multer({
+      storage: multer.memoryStorage(),
+      limits: {
+        fileSize: 3 * 1024 * 1024, // 3MB max for banners
+      },
+      fileFilter: (_req, file, cb) => {
+        if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error("Format d'image non autorisé. Utilisez JPG, PNG ou WEBP."));
+        }
+      },
+    });
+
+    // File upload route - stores files in Object Storage if available, otherwise base64
   app.post("/api/upload", upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
@@ -454,9 +490,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
         details: error.message 
       });
     }
-  });
+    });
 
-  // File download route - retrieves files from Object Storage (if available)
+    app.post("/api/banners/upload", isAuthenticated, bannerUpload.single("file"), async (req, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ message: "Aucune image fournie" });
+        }
+
+        const extensionByMime: Record<string, string> = {
+          "image/jpeg": "jpg",
+          "image/png": "png",
+          "image/webp": "webp",
+        };
+
+        const extension = extensionByMime[req.file.mimetype] ?? "jpg";
+        const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
+        const filePath = path.join(BANNERS_DIR, filename);
+
+        await fsPromises.writeFile(filePath, req.file.buffer);
+
+        const previousUrl = typeof req.body.previousUrl === "string" ? req.body.previousUrl : undefined;
+        if (previousUrl && previousUrl.startsWith("/uploads/banners/")) {
+          const relativePrevious = previousUrl.replace("/uploads/", "");
+          const absolutePreviousPath = path.join(UPLOADS_ROOT, relativePrevious);
+
+          if (absolutePreviousPath.startsWith(BANNERS_DIR)) {
+            try {
+              await fsPromises.unlink(absolutePreviousPath);
+            } catch (unlinkError: any) {
+              if (unlinkError?.code !== "ENOENT") {
+                console.warn("Impossible de supprimer l'ancienne bannière:", unlinkError);
+              }
+            }
+          }
+        }
+
+        res.json({ url: `/uploads/banners/${filename}`, filename });
+      } catch (error: any) {
+        console.error("Banner upload error:", error);
+        if (error?.message?.includes("Format d'image")) {
+          return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Erreur lors de l'upload de la bannière" });
+      }
+    });
+
+    app.get("/api/banners", async (_req, res) => {
+      try {
+        const entries = await Promise.all(
+          (Object.entries(BANNER_PARAM_KEYS) as [BannerPage, string][]).map(async ([page, key]) => {
+            const param = await storage.getParametreSiteByCle(key);
+            return [page, param?.valeur ?? null] as const;
+          })
+        );
+        res.json(Object.fromEntries(entries));
+      } catch (error) {
+        console.error("Banner fetch error:", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des bannières" });
+      }
+    });
+
+    app.put("/api/banners/:page", isAuthenticated, async (req, res) => {
+      try {
+        const page = req.params.page as BannerPage;
+        if (!(page in BANNER_PARAM_KEYS)) {
+          return res.status(400).json({ message: "Page inconnue" });
+        }
+
+        const rawUrl = typeof req.body.url === "string" ? req.body.url.trim() : "";
+        if (!rawUrl) {
+          return res.status(400).json({ message: "URL requise" });
+        }
+
+        const isAllowedUrl =
+          rawUrl.startsWith("/uploads/banners/") ||
+          rawUrl.startsWith("http://") ||
+          rawUrl.startsWith("https://");
+
+        if (!isAllowedUrl) {
+          return res.status(400).json({ message: "URL non autorisée" });
+        }
+
+        const storedParam = await storage.upsertParametreSite(BANNER_PARAM_KEYS[page], rawUrl);
+        res.json({ page, url: storedParam.valeur });
+      } catch (error) {
+        console.error("Banner update error:", error);
+        res.status(500).json({ message: "Erreur lors de la mise à jour de l'image" });
+      }
+    });
+
+    // File download route - retrieves files from Object Storage (if available)
   app.get("/api/download/:path(*)", async (req, res) => {
     try {
       if (!objectStorageClient) {
@@ -785,19 +909,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/prestations", async (req, res) => {
-    try {
-      const prestations = await storage.getPrestations();
-      res.json(prestations);
-    } catch (err) {
-      console.error("❌ Erreur dans /api/prestations :", err);
-      res.status(500).json({
-        message: "Erreur serveur",
-        error: err?.message || String(err),
-        stack: err?.stack,
-      });
-    }
-  });
+    app.get("/api/prestations", async (req, res) => {
+      try {
+        const prestations = await storage.getPrestations();
+        res.json(prestations);
+      } catch (err) {
+        console.error("❌ Erreur dans /api/prestations :", err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const errorStack = err instanceof Error ? err.stack : undefined;
+        res.status(500).json({
+          message: "Erreur serveur",
+          error: errorMessage,
+          stack: errorStack,
+        });
+      }
+    });
 
   app.get("/api/prestations/:id", async (req, res) => {
     try {

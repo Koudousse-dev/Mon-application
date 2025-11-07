@@ -16,6 +16,9 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
 import nannyFormImage from "@assets/stock_images/professional_african_fd0ffe5f.jpg";
+import { useAdminUser } from "@/hooks/use-admin-user";
+import { useBannerImage } from "@/hooks/use-banner-image";
+import { HeroImageEditor } from "@/components/hero-image-editor";
 
 interface UploadedFile {
   filename: string;
@@ -31,6 +34,9 @@ export default function NannyForm() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { data: adminUser } = useAdminUser();
+  const isAdmin = Boolean(adminUser?.user);
+  const { heroImage, setHeroImage } = useBannerImage("nanny-form", nannyFormImage);
 
   const form = useForm({
     resolver: zodResolver(insertNannyApplicationSchema),
@@ -197,12 +203,19 @@ export default function NannyForm() {
   return (
     <div className="mobile-container min-h-screen bg-background">
       {/* Header with Image */}
-      <div className="relative overflow-hidden">
-        <img 
-          src={nannyFormImage} 
-          alt="Nounou professionnelle" 
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative overflow-hidden">
+          <img 
+            src={heroImage} 
+            alt="Nounou professionnelle" 
+            className="w-full h-48 object-cover transition-all duration-300"
+          />
+          <HeroImageEditor
+            page="nanny-form"
+            currentUrl={heroImage}
+            defaultUrl={nannyFormImage}
+            isAdmin={isAdmin}
+            onChange={setHeroImage}
+          />
         <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 to-secondary/40 flex items-end p-4 sm:p-6">
           <div className="flex items-center gap-4 w-full">
             <Link href="/">
