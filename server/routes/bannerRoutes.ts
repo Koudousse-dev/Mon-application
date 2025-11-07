@@ -2,8 +2,13 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
 const router = express.Router();
+
+// ✅ Recréer __dirname en mode ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 🗂️ Dossier de stockage des bannières
 const bannerDir = path.join(__dirname, "../../client/public/uploads/banners");
