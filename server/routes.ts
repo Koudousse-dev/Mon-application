@@ -9,7 +9,9 @@ import { Client } from "@replit/object-storage";
 import fs from "fs";
 import path from "path";
 
-const UPLOADS_ROOT = path.resolve(import.meta.dirname, "..", "uploads");
+const UPLOADS_ROOT = process.env.UPLOADS_DIR
+  ? path.resolve(process.env.UPLOADS_DIR)
+  : path.resolve(import.meta.dirname, "..", "uploads");
 const BANNERS_DIR = path.join(UPLOADS_ROOT, "banners");
 
 if (!fs.existsSync(BANNERS_DIR)) {

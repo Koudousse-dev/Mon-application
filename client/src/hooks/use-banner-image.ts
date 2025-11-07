@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BANNER_QUERY_KEY, type BannerPage, type BannerResponse } from "@/lib/banners";
 
@@ -8,15 +8,16 @@ export function useBannerImage(page: BannerPage, defaultImage: string) {
   });
 
   const [heroImage, setHeroImage] = useState(defaultImage);
+  const stableDefault = useMemo(() => defaultImage, [defaultImage]);
 
   useEffect(() => {
     const url = banners?.[page];
     if (typeof url === "string" && url.length > 0) {
       setHeroImage(url);
     } else {
-      setHeroImage(defaultImage);
+      setHeroImage(stableDefault);
     }
-  }, [banners, page, defaultImage]);
+  }, [banners, page, stableDefault]);
 
   return { heroImage, setHeroImage, banners };
 }
