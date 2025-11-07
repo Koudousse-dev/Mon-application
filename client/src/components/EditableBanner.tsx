@@ -75,35 +75,40 @@ export default function EditableBanner({
 
   // 🚀 Étape 4 : envoyer l’image rognée
   const handleCropConfirm = async () => {
-    const blob = await getCroppedImage();
-    if (!blob) return;
+  const blob = await getCroppedImage();
+  if (!blob) return;
 
-    setUploading(true);
+  setUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("banner", blob, "banner.jpg");
+  try {
+    const formData = new FormData();
+    formData.append("banner", blob, "banner.jpg");
 
-      const response = await fetch("/api/upload-banner", {
-        method: "POST",
-        body: formData,
-      });
+    const response = await fetch("/api/upload-banner", {
+      method: "POST",
+      body: formData,
+    });
 
-      const data = await response.json();
-      if (data.url) {
-        setCurrentImage(data.url);
-      } else {
-        alert("Erreur : impossible de récupérer l’URL de l’image");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de l’envoi du fichier.");
-    } finally {
-      setUploading(false);
-      setShowCropper(false);
-      setSelectedImage(null);
+    const data = await response.json();
+    console.log("Upload result:", data);
+
+    // ✅ Accepte à la fois "url" ou "path"
+    if (data.url) {
+      setCurrentImage(data.url);
+    } else if (data.path) {
+      setCurrentImage(data.path);
+    } else {
+      alert("Erreur : impossible de récupérer l’URL de l’image");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Erreur lors de l’envoi du fichier.");
+  } finally {
+    setUploading(false);
+    setShowCropper(false);
+    setSelectedImage(null);
+  }
+};
 
   return (
     <div className="relative overflow-hidden">
@@ -142,38 +147,40 @@ export default function EditableBanner({
 
       {/* ✅ Fenêtre de rognage */}
       {showCropper && selectedImage && (
-        <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center z-50">
-          <div className="relative w-80 h-80 bg-gray-900">
-            <Cropper
-              image={selectedImage}
-              crop={crop}
-              zoom={zoom}
-              aspect={3 / 2}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={() => {
-                setShowCropper(false);
-                setSelectedImage(null);
-              }}
-              className="bg-gray-500 text-white px-4 py-2 rounded"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={handleCropConfirm}
-              className="bg-green-600 text-white px-4 py-2 rounded"
-              disabled={uploading}
-            >
-              Valider
-            </button>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50">
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-sm w-full">
+      <div className="relative w-full h-80 bg-black">
+        <Cropper
+          image={selectedImage}
+          crop={crop}
+          zoom={zoom}
+          aspect={3 / 2}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={onCropComplete}
+        />
+      </div>
+      <div className="flex justify-end gap-3 p-4 border-t bg-gray-50">
+        <button
+          onClick={() => {
+            setShowCropper(false);
+            setSelectedImage(null);
+          }}
+          className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
+        >
+          Annuler
+        </button>
+        <button
+          onClick={handleCropConfirm}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+          disabled={uploading}
+        >
+          Valider
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
