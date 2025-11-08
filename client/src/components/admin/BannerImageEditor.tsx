@@ -134,9 +134,17 @@ export default function BannerImageEditor({
       formData.append("image", croppedImage, `${pageKey}-banner.jpg`);
       formData.append("pageKey", pageKey);
 
-      const response = await apiRequest("POST", "/api/banners/upload", formData, {
-        headers: {},
+      const response = await fetch("/api/banners/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur lors de l'upload");
+      }
+      
       return await response.json();
     },
     onSuccess: (data) => {
