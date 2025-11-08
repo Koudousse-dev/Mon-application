@@ -11,13 +11,24 @@ import rateLimit from "express-rate-limit";
 
 
 const app = express();
-// 🛡️ Security middlewares
-app.use(helmet()); // Protège contre la plupart des attaques HTTP
+
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+// 🛡️ Security middlewares - Configure Helmet for dev/prod
+if (isDevelopment) {
+  // Development: Allow Vite inline scripts and websockets
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP in dev for Vite HMR
+  }));
+} else {
+  // Production: Full security
+  app.use(helmet());
+}
 
 // 🚦 Limite le nombre de requêtes par IP pour éviter les abus
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limite à 100 requêtes par IP
+  max: isDevelopment ? 500 : 100, // Higher limit in dev for HMR and asset loading
   standardHeaders: true, // ajoute les headers RateLimit-*
   legacyHeaders: false,
 });
