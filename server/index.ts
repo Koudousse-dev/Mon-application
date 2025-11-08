@@ -59,11 +59,6 @@ if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable must be set in production");
 }
 
-// Session configuration adaptée à Render
-app.set("trust proxy", 1); // important derrière le proxy Render
-
-const isProduction = process.env.NODE_ENV === "production";
-
 // 🛡️ Secure session & cookie configuration
 app.use(
   session({
@@ -78,7 +73,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production", // HTTPS only en prod
       httpOnly: true, // empêche l’accès JavaScript au cookie
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // cross-site autorisé en prod
+      sameSite: "lax", // Compatible avec tous les navigateurs et environnements
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
       path: "/", // obligatoire pour la validité du cookie
     },
