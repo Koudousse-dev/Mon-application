@@ -95,7 +95,13 @@ async function sendPushToAdmins(title: string, message: string, data?: any) {
     const results = await Promise.allSettled(
       subscriptions.map(sub => 
         webpush.sendNotification(
-          JSON.parse(sub.subscription),
+          {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth
+            }
+          },
           payload
         ).catch(err => {
           // Handle expired/invalid subscriptions
@@ -1372,6 +1378,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Push send error:', error);
       res.status(500).json({ message: "Erreur lors de l'envoi", details: error.message });
     }
+  });
+
+  // Serve Service Worker file with correct MIME type
+  app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.sendFile('sw.js', { root: './public' });
   });
 
   // Serve uploaded banner images as static files with no-cache headers
