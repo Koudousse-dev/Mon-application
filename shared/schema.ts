@@ -223,6 +223,14 @@ export const paiementsEmployes = pgTable("paiements_employes", {
   notes: text("notes"),
 });
 
+// Table des images de bannière (hero images pour les pages)
+export const bannerImages = pgTable("banner_images", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  pageKey: text("page_key").notNull().unique(), // 'parent-form', 'nanny-form', 'contact'
+  imageUrl: text("image_url").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Schemas Zod pour les nouvelles tables
 export const insertPrestationSchema = createInsertSchema(prestations).omit({
   id: true,
@@ -318,3 +326,20 @@ export const updatePaymentConfigSchema = z.object({
 export type InsertPaymentConfig = z.infer<typeof insertPaymentConfigSchema>;
 export type UpdatePaymentConfig = z.infer<typeof updatePaymentConfigSchema>;
 export type PaymentConfig = typeof paymentConfigs.$inferSelect;
+
+// Schémas pour les bannières
+export const insertBannerImageSchema = createInsertSchema(bannerImages).omit({
+  id: true,
+  updatedAt: true,
+}).extend({
+  pageKey: z.enum(["parent-form", "nanny-form", "contact"]),
+  imageUrl: z.string().min(1, "L'URL de l'image est obligatoire"),
+});
+
+export const updateBannerImageSchema = z.object({
+  imageUrl: z.string().min(1, "L'URL de l'image est obligatoire"),
+});
+
+export type InsertBannerImage = z.infer<typeof insertBannerImageSchema>;
+export type UpdateBannerImage = z.infer<typeof updateBannerImageSchema>;
+export type BannerImage = typeof bannerImages.$inferSelect;
