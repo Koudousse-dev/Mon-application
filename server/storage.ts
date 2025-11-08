@@ -2,7 +2,7 @@ import { type ParentRequest, type InsertParentRequest, type NannyApplication, ty
 import { randomUUID } from "crypto";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 // Initialize database connection
 const initDb = () => {
@@ -742,82 +742,48 @@ export class DbStorage implements IStorage {
   }
 
   async getBannerImage(pageKey: string): Promise<BannerImage | undefined> {
-    // Use filesystem-based storage to avoid Neon serverless driver issues
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const bannersDir = path.resolve(process.cwd(), 'uploads', 'banners');
-    const bannersFile = path.join(bannersDir, 'banners.json');
+    const [banner] = await db
+      .select()
+      .from(bannerImages)
+      .where(eq(bannerImages.pageKey, pageKey));
     
-    try {
-      // Ensure directory exists
-      await fs.mkdir(bannersDir, { recursive: true });
-      
-      // Try to read file
-      const data = await fs.readFile(bannersFile, 'utf-8');
-      
-      // Handle empty file
-      if (!data.trim()) {
-        await fs.writeFile(bannersFile, '{}');
-        return undefined;
-      }
-      
-      const banners = JSON.parse(data);
-      const banner = banners[pageKey];
-      
-      if (!banner) {
-        return undefined;
-      }
-      
-      // Ensure Date object is properly converted
-      return {
-        id: banner.id,
-        pageKey: banner.pageKey,
-        imageUrl: banner.imageUrl,
-        updatedAt: new Date(banner.updatedAt),
-      };
-    } catch (error: any) {
-      // File doesn't exist - initialize it
-      if (error.code === 'ENOENT') {
-        await fs.mkdir(bannersDir, { recursive: true });
-        await fs.writeFile(bannersFile, '{}');
-      }
-      return undefined;
-    }
+    return banner;
   }
 
   async upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage> {
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const bannersDir = path.resolve(process.cwd(), 'uploads', 'banners');
-    const bannersFile = path.join(bannersDir, 'banners.json');
+    // Check if banner exists
+    const [existingBanner] = await db
+      .select()
+      .from(bannerImages)
+      .where(eq(bannerImages.pageKey, pageKey));
     
-    // Ensure directory exists
-    await fs.mkdir(bannersDir, { recursive: true });
-    
-    let banners: Record<string, BannerImage> = {};
-    
-    // Read existing banners
-    try {
-      const data = await fs.readFile(bannersFile, 'utf-8');
-      banners = JSON.parse(data);
-    } catch (error) {
-      // File doesn't exist, will create new
+    if (existingBanner) {
+      // Update existing banner and increment version
+      const [updated] = await db
+        .update(bannerImages)
+        .set({ 
+          imageUrl, 
+          version: sql`${bannerImages.version} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(bannerImages.pageKey, pageKey))
+        .returning();
+      
+      return updated;
+    } else {
+      // Create new banner
+      const [created] = await db
+        .insert(bannerImages)
+        .values({
+          pageKey,
+          imageUrl,
+          version: 1,
+          updatedAt: new Date(),
+        })
+        .returning();
+      
+      return created;
     }
-    
-    // Create or update banner
-    const banner: BannerImage = {
-      id: randomUUID(),
-      pageKey,
-      imageUrl,
-      updatedAt: new Date(),
-    };
-    
-    banners[pageKey] = banner;
-    
-    // Write back to file
-    await fs.writeFile(bannersFile, JSON.stringify(banners, null, 2));
-    
-    return banner;
   }
 
   async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
@@ -877,18 +843,21 @@ export async function initializeBannerStorage(): Promise<void> {
           id: randomUUID(),
           pageKey: 'parent-form',
           imageUrl: '',
+          version: 0,
           updatedAt: new Date(),
         },
         'nanny-form': {
           id: randomUUID(),
           pageKey: 'nanny-form',
           imageUrl: '',
+          version: 0,
           updatedAt: new Date(),
         },
         'contact': {
           id: randomUUID(),
           pageKey: 'contact',
           imageUrl: '',
+          version: 0,
           updatedAt: new Date(),
         },
       };
