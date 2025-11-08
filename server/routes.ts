@@ -1267,6 +1267,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all banner versions for cache-busting
+  app.get("/api/banners/versions/all", async (req, res) => {
+    try {
+      const pageKeys = ['parent-form', 'nanny-form', 'contact'];
+      const versions: Record<string, number> = {};
+      
+      for (const pageKey of pageKeys) {
+        const banner = await storage.getBannerImage(pageKey);
+        versions[pageKey] = banner?.version || 0;
+      }
+      
+      res.json(versions);
+    } catch (error: any) {
+      console.error('❌ Erreur dans /api/banners/versions/all :', error);
+      res.status(500).json({ message: "Erreur serveur", details: error.message });
+    }
+  });
+
   // Push notification routes
   
   // Get VAPID public key
