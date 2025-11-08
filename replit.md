@@ -19,8 +19,9 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage Solutions
 **Database:** PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe operations and Drizzle Kit for migrations.
-**Schema Design:** Includes `parent_requests`, `nanny_applications`, `contact_messages`, `notifications`, `payments`, `payment_configs`, `prestations`, `parametres_site`, `employees`, and `paiements_employes`.
+**Schema Design:** Includes `parent_requests`, `nanny_applications`, `contact_messages`, `notifications`, `payments`, `payment_configs`, `prestations`, `parametres_site`, `employees`, `paiements_employes`, `push_subscriptions`, and `banner_images`.
 **Storage Implementation:** `DbStorage` for production (PostgreSQL) and `MemStorage` for development/testing. IndexedDB for client-side offline persistence.
+**Automatic Migrations:** Production deployments run `npm run db:push` before server startup to automatically sync database schema. Drizzle config uses `strict: false` for non-interactive CI/CD deployments.
 
 ### Authentication and Authorization
 **Admin Authentication:** Passport.js with local strategy, Bcryptjs for password hashing (10 salt rounds), Express sessions with secure cookie configuration. Default admin credentials are "admin"/"admin123". Admin users are stored in the `admin_users` table.
@@ -41,8 +42,9 @@ Preferred communication style: Simple, everyday language.
 **Banner Image Management:** Admin-editable hero banners for parent form, nanny form, and contact pages with:
 - Secure upload with react-easy-crop integration for image cropping
 - Deterministic file naming (parent-form.jpg, nanny-form.jpg, contact.jpg) with physical file overwriting
-- Cache-busting HTTP headers (Cache-Control: no-cache) to ensure immediate UI updates
-- Stored in Replit Object Storage (if enabled) or PostgreSQL as base64
+- Cache-busting via automatic version incrementing (`?v=X` query parameter) on each upload
+- Stored in PostgreSQL `banner_images` table with base64 encoding and version tracking
+- Immediate UI updates without browser cache flash (version-based cache invalidation)
 **Splash Screen:** Professional loading screen with 0-100% progress animation displayed on app startup, featuring:
 - Branded gradient background (green to orange)
 - Animated logo and progress bar
