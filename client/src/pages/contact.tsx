@@ -24,11 +24,12 @@ export default function Contact() {
     queryKey: ["/api/parametres-site"],
   });
 
-  const { data: user } = useQuery<any>({
+  const { data: authData } = useQuery<any>({
     queryKey: ["/api/auth/user"],
   });
 
-  const isAdmin = user && user.role === "admin";
+  const user = authData?.user;
+  const isAdmin = user?.role === "admin";
   const currentBannerImage = useBannerImage("contact", contactImage);
 
   const email = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "email")?.valeur || "contact@gardedesenfantsgabon.com");

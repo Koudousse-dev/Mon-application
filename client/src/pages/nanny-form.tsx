@@ -35,11 +35,12 @@ export default function NannyForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { data: user } = useQuery<any>({
+  const { data: authData } = useQuery<any>({
     queryKey: ["/api/auth/user"],
   });
 
-  const isAdmin = user && user.role === "admin";
+  const user = authData?.user;
+  const isAdmin = user?.role === "admin";
   const currentBannerImage = useBannerImage("nanny-form", nannyFormImage);
 
   const form = useForm({

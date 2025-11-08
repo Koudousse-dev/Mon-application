@@ -26,11 +26,12 @@ export default function ParentForm() {
     queryKey: ["/api/prestations"],
   });
 
-  const { data: user } = useQuery<any>({
+  const { data: authData } = useQuery<any>({
     queryKey: ["/api/auth/user"],
   });
 
-  const isAdmin = user && user.role === "admin";
+  const user = authData?.user;
+  const isAdmin = user?.role === "admin";
   const currentBannerImage = useBannerImage("parent-form", parentFormImage);
   
   // Parse URL query parameters
