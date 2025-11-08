@@ -1100,14 +1100,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "pageKey invalide" });
       }
 
-      const timestamp = Date.now();
       const extension = req.file.originalname.split('.').pop();
-      const filename = `${pageKey}-${timestamp}.${extension}`;
+      // Use fixed filename to overwrite old image (no timestamp)
+      const filename = `${pageKey}.${extension}`;
       const fs = await import('fs/promises');
       const path = await import('path');
       
-      // Save image to uploads/banners/
-      const uploadPath = path.resolve(process.cwd(), 'uploads', 'banners', filename);
+      const bannersDir = path.resolve(process.cwd(), 'uploads', 'banners');
+      const uploadPath = path.join(bannersDir, filename);
+      
+      // Ensure directory exists
+      await fs.mkdir(bannersDir, { recursive: true });
+      
+      // Delete old banner files for this page (any extension) before uploading new one
+      try {
+        const files = await fs.readdir(bannersDir);
+        for (const file of files) {
+          if (file.startsWith(`${pageKey}.`) && file !== filename) {
+            await fs.unlink(path.join(bannersDir, file));
+          }
+        }
+      } catch (error) {
+        // Directory might not exist yet, that's okay
+      }
+      
+      // Save new image (overwrites if same extension)
       await fs.writeFile(uploadPath, req.file.buffer);
 
       // Create URL path
