@@ -1,0 +1,71 @@
+Downloading cache...
+==> Cloning from https://github.com/Koudousse-dev/Mon-application
+==> Checking out commit fa76a62deb706c750201295595907e37759aa13b in branch stable-ui-v2
+==> Downloaded 360MB in 3s. Extraction took 6s.
+==> Using Node.js version 22.16.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'npm install; npm run build'...
+> rest-express@1.0.0 postinstall
+> prisma generate
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.18.0 -> 6.19.0                      │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+✔ Generated Prisma Client (v6.18.0) to ./node_modules/@prisma/client in 74ms
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+up to date, audited 620 packages in 3s
+81 packages are looking for funding
+  run `npm fund` for details
+6 vulnerabilities (5 moderate, 1 high)
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+vite v5.4.21 building for production...
+transforming...
+✓ 1869 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                           3.45 kB │ gzip:   1.17 kB
+../dist/public/assets/warm_african_mother__19616505-zKcaBMuz.jpg  179.55 kB
+../dist/public/assets/professional_african_fd0ffe5f-JeWvOfIx.jpg  259.73 kB
+../dist/public/assets/happy_african_childr_f11fd4ba-CzKVQaoS.jpg  353.05 kB
+../dist/public/assets/index-CScGDsEV.css                           72.47 kB │ gzip:  12.51 kB
+../dist/public/assets/index-DkrTEtzx.js                           644.24 kB │ gzip: 186.49 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.20s
+  dist/index.js  78.6kb
+⚡ Done in 7ms
+==> Uploading build...
+==> Uploaded in 7.6s. Compression took 3.7s
+==> Build successful 🎉
+==> Deploying...
+==> Running 'npm run start'
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+ℹ Object Storage disabled (using base64 storage)
+  To enable: create bucket in Replit UI (Tools → App Storage)
+  Then set ENABLE_OBJECT_STORAGE=true environment variable
+✓ Admin user already exists
+4:32:07 PM [express] ✅ Server running on http://0.0.0.0:10000
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://www.garde-enfants-gabon.com + 2 more domains
+==> 
+==> ///////////////////////////////////////////////////////////
+4:32:52 PM [express] GET /api/auth/user 304 in 6ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+4:32:56 PM [express] GET /api/banners/parent-form 404 in 9ms :: {"message":"Bannière non trouvée"}
+4:32:56 PM [express] GET /api/prestations 304 in 72ms :: []
