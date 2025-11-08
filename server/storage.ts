@@ -1,4 +1,4 @@
-import { type ParentRequest, type InsertParentRequest, type NannyApplication, type InsertNannyApplication, type ContactMessage, type InsertContactMessage, type Notification, type InsertNotification, type Prestation, type InsertPrestation, type ParametreSite, type InsertParametreSite, type Employee, type InsertEmployee, type PaiementEmploye, type InsertPaiementEmploye, type PaymentConfig, type InsertPaymentConfig, type UpdatePaymentConfig, type BannerImage, type InsertBannerImage, type UpdateBannerImage, parentRequests, nannyApplications, contactMessages, notifications, adminUsers, prestations, parametresSite, employees, paiementsEmployes, paymentConfigs, bannerImages } from "@shared/schema";
+import { type ParentRequest, type InsertParentRequest, type NannyApplication, type InsertNannyApplication, type ContactMessage, type InsertContactMessage, type Notification, type InsertNotification, type Prestation, type InsertPrestation, type ParametreSite, type InsertParametreSite, type Employee, type InsertEmployee, type PaiementEmploye, type InsertPaiementEmploye, type PaymentConfig, type InsertPaymentConfig, type UpdatePaymentConfig, type BannerImage, type InsertBannerImage, type UpdateBannerImage, type PushSubscription, type InsertPushSubscription, parentRequests, nannyApplications, contactMessages, notifications, adminUsers, prestations, parametresSite, employees, paiementsEmployes, paymentConfigs, bannerImages, pushSubscriptions } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
@@ -94,6 +94,12 @@ export interface IStorage {
   // Banner images
   getBannerImage(pageKey: string): Promise<BannerImage | undefined>;
   upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage>;
+  
+  // Push subscriptions
+  createPushSubscription(subscription: import("@shared/schema").InsertPushSubscription): Promise<import("@shared/schema").PushSubscription>;
+  getPushSubscriptions(): Promise<import("@shared/schema").PushSubscription[]>;
+  getPushSubscriptionByEndpoint(endpoint: string): Promise<import("@shared/schema").PushSubscription | undefined>;
+  deletePushSubscription(endpoint: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -416,6 +422,22 @@ export class MemStorage implements IStorage {
 
   async upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage> {
     throw new Error("Banner images not supported in memory storage");
+  }
+
+  async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
+    throw new Error("Push subscriptions not supported in memory storage");
+  }
+
+  async getPushSubscriptions(): Promise<PushSubscription[]> {
+    throw new Error("Push subscriptions not supported in memory storage");
+  }
+
+  async getPushSubscriptionByEndpoint(endpoint: string): Promise<PushSubscription | undefined> {
+    throw new Error("Push subscriptions not supported in memory storage");
+  }
+
+  async deletePushSubscription(endpoint: string): Promise<void> {
+    throw new Error("Push subscriptions not supported in memory storage");
   }
 }
 
@@ -796,6 +818,24 @@ export class DbStorage implements IStorage {
     await fs.writeFile(bannersFile, JSON.stringify(banners, null, 2));
     
     return banner;
+  }
+
+  async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
+    const [sub] = await db.insert(pushSubscriptions).values(subscription).returning();
+    return sub;
+  }
+
+  async getPushSubscriptions(): Promise<PushSubscription[]> {
+    return await db.select().from(pushSubscriptions);
+  }
+
+  async getPushSubscriptionByEndpoint(endpoint: string): Promise<PushSubscription | undefined> {
+    const [sub] = await db.select().from(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+    return sub;
+  }
+
+  async deletePushSubscription(endpoint: string): Promise<void> {
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
   }
 }
 

@@ -231,6 +231,16 @@ export const bannerImages = pgTable("banner_images", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Table des abonnements aux notifications push
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Admin user ID
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(), // Encryption key
+  auth: text("auth").notNull(), // Authentication secret
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Schemas Zod pour les nouvelles tables
 export const insertPrestationSchema = createInsertSchema(prestations).omit({
   id: true,
@@ -343,3 +353,17 @@ export const updateBannerImageSchema = z.object({
 export type InsertBannerImage = z.infer<typeof insertBannerImageSchema>;
 export type UpdateBannerImage = z.infer<typeof updateBannerImageSchema>;
 export type BannerImage = typeof bannerImages.$inferSelect;
+
+// Schémas pour les abonnements push
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  userId: z.string().min(1, "L'ID utilisateur est obligatoire"),
+  endpoint: z.string().min(1, "L'endpoint est obligatoire"),
+  p256dh: z.string().min(1, "La clé p256dh est obligatoire"),
+  auth: z.string().min(1, "La clé auth est obligatoire"),
+});
+
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;

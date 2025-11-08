@@ -37,10 +37,42 @@ import {
   updateAdminProfileSchema,
   updatePaymentConfigSchema,
   insertBannerImageSchema,
-  updateBannerImageSchema
+  updateBannerImageSchema,
+  insertPushSubscriptionSchema
 } from "@shared/schema";
 import { findBestMatches, getBestMatchForRequest, calculateMatchScore } from "@shared/matching";
 import { z } from "zod";
+import webpush from "web-push";
+
+// Configure VAPID keys for web push
+// Generate these using: npx web-push generate-vapid-keys
+// In production, these MUST be set as environment variables
+let VAPID_PUBLIC_KEY: string;
+let VAPID_PRIVATE_KEY: string;
+
+if (process.env.NODE_ENV === 'production') {
+  // Production: require environment variables
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    console.error('❌ VAPID keys not configured! Push notifications disabled.');
+    console.error('   Generate keys: npx web-push generate-vapid-keys');
+    console.error('   Set environment variables: VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY');
+  }
+  VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
+  VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
+} else {
+  // Development: use temporary keys (INSECURE - for testing only)
+  VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BNzF5q4e0B7_3xC-bZ4YXKjVq8WQy6-rQCJcQ7c7qVwO9z8E6JdV5Mx7Uv-4YxMwW9r8t0QpRnJvK6wXzYx9Abc";
+  VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "vH8J5eN9Zm7qX3pY0wT6kR2sL4cD1aF9gB3nM5vK8jR";
+  console.log('⚠️  Using dev VAPID keys - DO NOT use in production!');
+}
+
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:contact@dieuveille.com',
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+  );
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -1162,6 +1194,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('❌ Erreur dans /api/banners/:pageKey :', error);
       res.status(500).json({ message: "Erreur serveur", details: error.message });
+    }
+  });
+
+  // Push notification routes
+  
+  // Get VAPID public key
+  app.get("/api/push/vapid-public-key", (req, res) => {
+    res.json({ publicKey: VAPID_PUBLIC_KEY });
+  });
+
+  // Subscribe to push notifications (admin only)
+  app.post("/api/push/subscribe", isAuthenticated, async (req, res) => {
+    try {
+      // Verify admin role
+      if ((req.user as any)?.role !== 'admin') {
+        return res.status(403).json({ message: "Accès réservé aux administrateurs" });
+      }
+
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        return res.status(400).json({ message: "ID utilisateur manquant" });
+      }
+
+      const subscription = insertPushSubscriptionSchema.parse({
+        userId,
+        endpoint: req.body.endpoint,
+        p256dh: req.body.keys.p256dh,
+        auth: req.body.keys.auth,
+      });
+
+      // Check if subscription already exists
+      const existing = await storage.getPushSubscriptionByEndpoint(subscription.endpoint);
+      if (existing) {
+        return res.json({ message: "Déjà abonné", subscription: existing });
+      }
+
+      const newSubscription = await storage.createPushSubscription(subscription);
+      res.json({ message: "Abonnement créé avec succès", subscription: newSubscription });
+    } catch (error: any) {
+      console.error('Push subscription error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Données invalides", errors: error.errors });
+      }
+      res.status(500).json({ message: "Erreur lors de l'abonnement", details: error.message });
+    }
+  });
+
+  // Unsubscribe from push notifications
+  app.post("/api/push/unsubscribe", isAuthenticated, async (req, res) => {
+    try {
+      const { endpoint } = req.body;
+      if (!endpoint) {
+        return res.status(400).json({ message: "Endpoint manquant" });
+      }
+
+      await storage.deletePushSubscription(endpoint);
+      res.json({ message: "Désabonnement réussi" });
+    } catch (error: any) {
+      console.error('Push unsubscribe error:', error);
+      res.status(500).json({ message: "Erreur lors du désabonnement", details: error.message });
+    }
+  });
+
+  // Send push notification to all subscribed admins (admin only)
+  app.post("/api/push/send", isAuthenticated, async (req, res) => {
+    try {
+      // Verify admin role
+      if ((req.user as any)?.role !== 'admin') {
+        return res.status(403).json({ message: "Accès réservé aux administrateurs" });
+      }
+
+      const { title, body, url, tag } = req.body;
+
+      const subscriptions = await storage.getPushSubscriptions();
+      if (subscriptions.length === 0) {
+        return res.json({ message: "Aucun abonné", sent: 0 });
+      }
+
+      const payload = JSON.stringify({ title, body, url, tag });
+      const sendPromises = subscriptions.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: {
+                p256dh: sub.p256dh,
+                auth: sub.auth,
+              },
+            },
+            payload
+          );
+          return { success: true, endpoint: sub.endpoint };
+        } catch (error: any) {
+          // If subscription is invalid, delete it
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            await storage.deletePushSubscription(sub.endpoint);
+          }
+          return { success: false, endpoint: sub.endpoint, error: error.message };
+        }
+      });
+
+      const results = await Promise.all(sendPromises);
+      const sent = results.filter(r => r.success).length;
+      
+      res.json({ 
+        message: `Notification envoyée à ${sent}/${subscriptions.length} abonnés`,
+        sent,
+        total: subscriptions.length,
+        results 
+      });
+    } catch (error: any) {
+      console.error('Push send error:', error);
+      res.status(500).json({ message: "Erreur lors de l'envoi", details: error.message });
     }
   });
 
