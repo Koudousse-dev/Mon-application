@@ -16,6 +16,21 @@ const initDb = () => {
 
 const db = initDb();
 
+// Create a singleton SQL client for raw queries
+const getSqlClient = (() => {
+  let client: ReturnType<typeof neon> | null = null;
+  return () => {
+    if (!client) {
+      const databaseUrl = process.env.DATABASE_URL;
+      if (!databaseUrl) {
+        throw new Error("DATABASE_URL environment variable is not defined");
+      }
+      client = neon(databaseUrl);
+    }
+    return client;
+  };
+})();
+
 export interface IStorage {
   // Parent requests
   createParentRequest(request: InsertParentRequest): Promise<ParentRequest>;
@@ -704,31 +719,82 @@ export class DbStorage implements IStorage {
   }
 
   async getBannerImage(pageKey: string): Promise<BannerImage | undefined> {
-    const [banner] = await db
-      .select()
-      .from(bannerImages)
-      .where(eq(bannerImages.pageKey, pageKey))
-      .limit(1);
-    return banner;
+    // Use filesystem-based storage to avoid Neon serverless driver issues
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const bannersDir = path.resolve(process.cwd(), 'uploads', 'banners');
+    const bannersFile = path.join(bannersDir, 'banners.json');
+    
+    try {
+      // Ensure directory exists
+      await fs.mkdir(bannersDir, { recursive: true });
+      
+      // Try to read file
+      const data = await fs.readFile(bannersFile, 'utf-8');
+      
+      // Handle empty file
+      if (!data.trim()) {
+        await fs.writeFile(bannersFile, '{}');
+        return undefined;
+      }
+      
+      const banners = JSON.parse(data);
+      const banner = banners[pageKey];
+      
+      if (!banner) {
+        return undefined;
+      }
+      
+      // Ensure Date object is properly converted
+      return {
+        id: banner.id,
+        pageKey: banner.pageKey,
+        imageUrl: banner.imageUrl,
+        updatedAt: new Date(banner.updatedAt),
+      };
+    } catch (error: any) {
+      // File doesn't exist - initialize it
+      if (error.code === 'ENOENT') {
+        await fs.mkdir(bannersDir, { recursive: true });
+        await fs.writeFile(bannersFile, '{}');
+      }
+      return undefined;
+    }
   }
 
   async upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage> {
-    const existing = await this.getBannerImage(pageKey);
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const bannersDir = path.resolve(process.cwd(), 'uploads', 'banners');
+    const bannersFile = path.join(bannersDir, 'banners.json');
     
-    if (existing) {
-      const [updated] = await db
-        .update(bannerImages)
-        .set({ imageUrl, updatedAt: new Date() })
-        .where(eq(bannerImages.pageKey, pageKey))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(bannerImages)
-        .values({ pageKey, imageUrl })
-        .returning();
-      return created;
+    // Ensure directory exists
+    await fs.mkdir(bannersDir, { recursive: true });
+    
+    let banners: Record<string, BannerImage> = {};
+    
+    // Read existing banners
+    try {
+      const data = await fs.readFile(bannersFile, 'utf-8');
+      banners = JSON.parse(data);
+    } catch (error) {
+      // File doesn't exist, will create new
     }
+    
+    // Create or update banner
+    const banner: BannerImage = {
+      id: randomUUID(),
+      pageKey,
+      imageUrl,
+      updatedAt: new Date(),
+    };
+    
+    banners[pageKey] = banner;
+    
+    // Write back to file
+    await fs.writeFile(bannersFile, JSON.stringify(banners, null, 2));
+    
+    return banner;
   }
 }
 

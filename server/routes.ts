@@ -791,7 +791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const prestations = await storage.getPrestations();
       res.json(prestations);
-    } catch (err) {
+    } catch (err: any) {
       console.error("❌ Erreur dans /api/prestations :", err);
       res.status(500).json({
         message: "Erreur serveur",
@@ -1087,7 +1087,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/banners/upload", isAuthenticated, bannerUpload.single('image'), async (req, res) => {
     try {
       // Verify admin role
-      if (req.user?.role !== 'admin') {
+      if ((req.user as any)?.role !== 'admin') {
         return res.status(403).json({ message: "Accès réservé aux administrateurs" });
       }
 
@@ -1142,8 +1142,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(banner);
-    } catch (error) {
-      res.status(500).json({ message: "Erreur serveur" });
+    } catch (error: any) {
+      console.error('❌ Erreur dans /api/banners/:pageKey :', error);
+      res.status(500).json({ message: "Erreur serveur", details: error.message });
     }
   });
 
