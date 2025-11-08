@@ -1148,8 +1148,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded banner images as static files
+  // Serve uploaded banner images as static files with no-cache headers
   const express = await import('express');
+  app.use('/uploads/banners', express.default.static('uploads/banners', {
+    setHeaders: (res) => {
+      // Disable caching to prevent showing old images after updates
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }));
+  
+  // Serve other uploaded files normally (with default caching)
   app.use('/uploads', express.default.static('uploads'));
 
   const httpServer = createServer(app);
