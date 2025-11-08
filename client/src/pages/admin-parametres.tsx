@@ -106,7 +106,7 @@ export default function AdminParametres() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-secondary/10 pb-20">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary to-secondary text-white p-6 shadow-lg">
         <div className="max-w-6xl mx-auto">

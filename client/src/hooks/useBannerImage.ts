@@ -9,5 +9,11 @@ export function useBannerImage(pageKey: "parent-form" | "nanny-form" | "contact"
     throwOnError: false,
   });
 
-  return banner?.imageUrl || fallbackImage;
+  // Add cache busting timestamp to prevent browser from showing old cached images
+  if (banner?.imageUrl) {
+    const timestamp = banner.updatedAt ? new Date(banner.updatedAt).getTime() : Date.now();
+    return `${banner.imageUrl}?t=${timestamp}`;
+  }
+  
+  return fallbackImage;
 }

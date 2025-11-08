@@ -142,7 +142,7 @@ export default function AdminPrestations() {
   return (
     <div className="min-h-screen bg-[hsl(145,25%,97%)] pb-20">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[hsl(145,63%,49%)] to-[hsl(25,95%,53%)] text-white p-6">
+      <div className="bg-gradient-to-r from-primary to-secondary text-white p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

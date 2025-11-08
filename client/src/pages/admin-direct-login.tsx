@@ -86,12 +86,11 @@ export default function AdminDirectLogin() {
   }, []);
 
   return (
-    <div style={{
+    <div className="hero-gradient" style={{
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, hsl(145, 63%, 49%) 0%, hsl(25, 95%, 53%) 100%)',
       padding: '24px'
     }}>
       <div style={{

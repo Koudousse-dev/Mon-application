@@ -213,9 +213,8 @@ export default function BannerImageEditor({
 
       <Button
         onClick={() => fileInputRef.current?.click()}
-        variant="secondary"
         size="sm"
-        className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white shadow-lg"
+        className="absolute top-4 right-4 z-10 bg-primary text-white hover:bg-primary/90 shadow-lg"
       >
         <Camera className="w-4 h-4 mr-2" />
         Changer l'image
