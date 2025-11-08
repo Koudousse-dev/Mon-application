@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ import AdminPaymentConfig from "@/pages/admin-payment-config";
 import MatchingPage from "@/pages/matching";
 import BottomNavigation from "@/components/bottom-navigation";
 
-function Router() {
+function Router({ showSplash }: { showSplash: boolean }) {
   return (
     <>
       <Switch>
@@ -42,20 +42,28 @@ function Router() {
         <Route path="/admin" component={AdminDashboard} />
         <Route component={NotFound} />
       </Switch>
-      <BottomNavigation />
+      {!showSplash && <BottomNavigation />}
     </>
   );
 }
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    const hasViewedSplash = localStorage.getItem("splash_screen_viewed");
+    return !hasViewedSplash;
+  });
+
+  const handleSplashComplete = () => {
+    localStorage.setItem("splash_screen_viewed", "true");
+    setShowSplash(false);
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
-        <Router />
+        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+        <Router showSplash={showSplash} />
       </TooltipProvider>
     </QueryClientProvider>
   );
