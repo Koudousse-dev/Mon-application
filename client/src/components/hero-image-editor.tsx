@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import Cropper, { type Area } from "react-easy-crop";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import type { Area } from "react-easy-crop";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +8,8 @@ import { getCroppedImageBlob } from "@/lib/crop-image";
 import { BANNER_QUERY_KEY, type BannerPage, type BannerResponse } from "@/lib/banners";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, UploadCloud, ImagePlus } from "lucide-react";
+
+const Cropper = lazy(() => import("react-easy-crop"));
 
 type AcceptedMime = "image/jpeg" | "image/png" | "image/webp";
 
@@ -235,18 +237,20 @@ export function HeroImageEditor({ page, currentUrl, defaultUrl, isAdmin, onChang
         ) : (
           <div className="space-y-4">
             <div className="relative h-[320px] w-full overflow-hidden rounded-lg bg-black/60">
-              <Cropper
-                image={imageSrc}
-                crop={crop}
-                zoom={zoom}
-                aspect={16 / 9}
-                cropShape="rect"
-                showGrid
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-                restrictPosition
-              />
+              <Suspense fallback={<div className="flex h-full w-full items-center justify-center text-white">Chargement…</div>}>
+                <Cropper
+                  image={imageSrc}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={16 / 9}
+                  cropShape="rect"
+                  showGrid
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={onCropComplete}
+                  restrictPosition
+                />
+              </Suspense>
             </div>
 
             <div className="space-y-2">
