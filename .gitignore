@@ -7,3 +7,6 @@ vite.config.ts.*
 .local/
 .config/
 .env.txt
+
+# Uploaded files
+uploads/

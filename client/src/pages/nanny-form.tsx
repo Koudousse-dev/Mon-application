@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, IdCard, Briefcase, FileUp, Check, CheckCircle, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
 import nannyFormImage from "@assets/stock_images/professional_african_fd0ffe5f.jpg";
+import BannerImageEditor from "@/components/admin/BannerImageEditor";
+import { useBannerImage } from "@/hooks/useBannerImage";
 
 interface UploadedFile {
   filename: string;
@@ -29,8 +31,16 @@ export default function NannyForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  const isAdmin = user && user.role === "admin";
+  const currentBannerImage = useBannerImage("nanny-form", nannyFormImage);
 
   const form = useForm({
     resolver: zodResolver(insertNannyApplicationSchema),
@@ -199,7 +209,7 @@ export default function NannyForm() {
       {/* Header with Image */}
       <div className="relative overflow-hidden">
         <img 
-          src={nannyFormImage} 
+          src={bannerImageUrl || currentBannerImage} 
           alt="Nounou professionnelle" 
           className="w-full h-48 object-cover"
         />
@@ -216,6 +226,13 @@ export default function NannyForm() {
             </div>
           </div>
         </div>
+        {isAdmin && (
+          <BannerImageEditor
+            pageKey="nanny-form"
+            currentImageUrl={currentBannerImage}
+            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+          />
+        )}
       </div>
 
       {/* Form Content */}

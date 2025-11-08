@@ -35,7 +35,9 @@ import {
   insertEmployeeSchema,
   insertPaiementEmployeSchema,
   updateAdminProfileSchema,
-  updatePaymentConfigSchema
+  updatePaymentConfigSchema,
+  insertBannerImageSchema,
+  updateBannerImageSchema
 } from "@shared/schema";
 import { findBestMatches, getBestMatchForRequest, calculateMatchScore } from "@shared/matching";
 import { z } from "zod";
@@ -1065,6 +1067,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   });
+
+  // Banner images routes (admin only)
+  const bannerUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB max
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Type de fichier non autorisé. Seules les images JPG, PNG et WebP sont acceptées.'));
+      }
+    },
+  });
+
+  app.post("/api/banners/upload", isAuthenticated, bannerUpload.single('image'), async (req, res) => {
+    try {
+      // Verify admin role
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Accès réservé aux administrateurs" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Aucune image fournie" });
+      }
+
+      const { pageKey } = req.body;
+      if (!pageKey || !['parent-form', 'nanny-form', 'contact'].includes(pageKey)) {
+        return res.status(400).json({ message: "pageKey invalide" });
+      }
+
+      const timestamp = Date.now();
+      const extension = req.file.originalname.split('.').pop();
+      const filename = `${pageKey}-${timestamp}.${extension}`;
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      // Save image to uploads/banners/
+      const uploadPath = path.resolve(process.cwd(), 'uploads', 'banners', filename);
+      await fs.writeFile(uploadPath, req.file.buffer);
+
+      // Create URL path
+      const imageUrl = `/uploads/banners/${filename}`;
+
+      // Upsert banner image in database
+      const banner = await storage.upsertBannerImage(pageKey, imageUrl);
+      
+      res.json(banner);
+    } catch (error: any) {
+      console.error('Banner upload error:', error);
+      if (error.message && error.message.includes('Type de fichier')) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ 
+        message: "Erreur lors de l'upload de la bannière",
+        details: error.message 
+      });
+    }
+  });
+
+  app.get("/api/banners/:pageKey", async (req, res) => {
+    try {
+      const { pageKey } = req.params;
+      if (!['parent-form', 'nanny-form', 'contact'].includes(pageKey)) {
+        return res.status(400).json({ message: "pageKey invalide" });
+      }
+
+      const banner = await storage.getBannerImage(pageKey);
+      if (!banner) {
+        return res.status(404).json({ message: "Bannière non trouvée" });
+      }
+      
+      res.json(banner);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
+  // Serve uploaded banner images as static files
+  const express = await import('express');
+  app.use('/uploads', express.default.static('uploads'));
 
   const httpServer = createServer(app);
   return httpServer;

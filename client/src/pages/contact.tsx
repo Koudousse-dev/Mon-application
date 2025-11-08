@@ -13,13 +13,23 @@ import { insertContactMessageSchema, type ParametreSite } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import contactImage from "@assets/stock_images/warm_african_mother__19616505.jpg";
+import BannerImageEditor from "@/components/admin/BannerImageEditor";
+import { useBannerImage } from "@/hooks/useBannerImage";
 
 export default function Contact() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
 
   const { data: parametres = [], isLoading: parametresLoading } = useQuery<ParametreSite[]>({
     queryKey: ["/api/parametres-site"],
   });
+
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  const isAdmin = user && user.role === "admin";
+  const currentBannerImage = useBannerImage("contact", contactImage);
 
   const email = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "email")?.valeur || "contact@gardedesenfantsgabon.com");
   const telephone = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "telephone")?.valeur || "+241 XX XX XX XX");
@@ -96,7 +106,7 @@ export default function Contact() {
       {/* Header with Image */}
       <div className="relative overflow-hidden">
         <img 
-          src={contactImage} 
+          src={bannerImageUrl || currentBannerImage} 
           alt="Contact - Famille heureuse" 
           className="w-full h-48 object-cover"
         />
@@ -113,6 +123,13 @@ export default function Contact() {
             </div>
           </div>
         </div>
+        {isAdmin && (
+          <BannerImageEditor
+            pageKey="contact"
+            currentImageUrl={currentBannerImage}
+            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+          />
+        )}
       </div>
 
       {/* Content */}

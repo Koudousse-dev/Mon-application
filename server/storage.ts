@@ -1,4 +1,4 @@
-import { type ParentRequest, type InsertParentRequest, type NannyApplication, type InsertNannyApplication, type ContactMessage, type InsertContactMessage, type Notification, type InsertNotification, type Prestation, type InsertPrestation, type ParametreSite, type InsertParametreSite, type Employee, type InsertEmployee, type PaiementEmploye, type InsertPaiementEmploye, type PaymentConfig, type InsertPaymentConfig, type UpdatePaymentConfig, parentRequests, nannyApplications, contactMessages, notifications, adminUsers, prestations, parametresSite, employees, paiementsEmployes, paymentConfigs } from "@shared/schema";
+import { type ParentRequest, type InsertParentRequest, type NannyApplication, type InsertNannyApplication, type ContactMessage, type InsertContactMessage, type Notification, type InsertNotification, type Prestation, type InsertPrestation, type ParametreSite, type InsertParametreSite, type Employee, type InsertEmployee, type PaiementEmploye, type InsertPaiementEmploye, type PaymentConfig, type InsertPaymentConfig, type UpdatePaymentConfig, type BannerImage, type InsertBannerImage, type UpdateBannerImage, parentRequests, nannyApplications, contactMessages, notifications, adminUsers, prestations, parametresSite, employees, paiementsEmployes, paymentConfigs, bannerImages } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
@@ -75,6 +75,10 @@ export interface IStorage {
   getPaymentConfigs(): Promise<PaymentConfig[]>;
   getPaymentConfigByProvider(provider: string): Promise<PaymentConfig | undefined>;
   upsertPaymentConfig(provider: string, config: UpdatePaymentConfig): Promise<PaymentConfig>;
+  
+  // Banner images
+  getBannerImage(pageKey: string): Promise<BannerImage | undefined>;
+  upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage>;
 }
 
 export class MemStorage implements IStorage {
@@ -389,6 +393,14 @@ export class MemStorage implements IStorage {
   async upsertPaymentConfig(provider: string, config: UpdatePaymentConfig): Promise<PaymentConfig> {
     throw new Error("Payment configs not supported in memory storage");
   }
+
+  async getBannerImage(pageKey: string): Promise<BannerImage | undefined> {
+    throw new Error("Banner images not supported in memory storage");
+  }
+
+  async upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage> {
+    throw new Error("Banner images not supported in memory storage");
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -686,6 +698,34 @@ export class DbStorage implements IStorage {
       const [created] = await db
         .insert(paymentConfigs)
         .values({ provider, ...config })
+        .returning();
+      return created;
+    }
+  }
+
+  async getBannerImage(pageKey: string): Promise<BannerImage | undefined> {
+    const [banner] = await db
+      .select()
+      .from(bannerImages)
+      .where(eq(bannerImages.pageKey, pageKey))
+      .limit(1);
+    return banner;
+  }
+
+  async upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage> {
+    const existing = await this.getBannerImage(pageKey);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(bannerImages)
+        .set({ imageUrl, updatedAt: new Date() })
+        .where(eq(bannerImages.pageKey, pageKey))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(bannerImages)
+        .values({ pageKey, imageUrl })
         .returning();
       return created;
     }

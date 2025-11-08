@@ -14,14 +14,24 @@ import { insertParentRequestSchema, type Prestation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import parentFormImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jpg";
+import BannerImageEditor from "@/components/admin/BannerImageEditor";
+import { useBannerImage } from "@/hooks/useBannerImage";
 
 export default function ParentForm() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
   const searchParams = useSearch();
 
   const { data: prestations = [], isLoading: prestationsLoading } = useQuery<Prestation[]>({
     queryKey: ["/api/prestations"],
   });
+
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  const isAdmin = user && user.role === "admin";
+  const currentBannerImage = useBannerImage("parent-form", parentFormImage);
   
   // Parse URL query parameters
   const urlParams = new URLSearchParams(searchParams);
@@ -123,7 +133,7 @@ export default function ParentForm() {
       {/* Header with Image */}
       <div className="relative overflow-hidden">
         <img 
-          src={parentFormImage} 
+          src={bannerImageUrl || currentBannerImage} 
           alt="Enfants heureux" 
           className="w-full h-48 object-cover"
         />
@@ -140,6 +150,13 @@ export default function ParentForm() {
             </div>
           </div>
         </div>
+        {isAdmin && (
+          <BannerImageEditor
+            pageKey="parent-form"
+            currentImageUrl={currentBannerImage}
+            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+          />
+        )}
       </div>
 
       {/* Form Content */}
