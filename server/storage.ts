@@ -267,6 +267,7 @@ export class MemStorage implements IStorage {
       id,
       horaireDebut: insertPrestation.horaireDebut ?? null,
       horaireFin: insertPrestation.horaireFin ?? null,
+      image: insertPrestation.image ?? null,
       actif: true,
       dateCreation: new Date(),
     };
@@ -800,3 +801,63 @@ export class DbStorage implements IStorage {
 
 // Use database storage in production, memory storage for testing
 export const storage = process.env.NODE_ENV === 'test' ? new MemStorage() : new DbStorage();
+
+/**
+ * Initialize banner storage by creating the banners.json file with default structure
+ * if it doesn't exist. This ensures the banner endpoints work immediately.
+ */
+export async function initializeBannerStorage(): Promise<void> {
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const bannersDir = path.resolve(process.cwd(), 'uploads', 'banners');
+  const bannersFile = path.join(bannersDir, 'banners.json');
+  
+  try {
+    // Ensure directory exists
+    await fs.mkdir(bannersDir, { recursive: true });
+    
+    let needsInitialization = false;
+    
+    // Check if file exists and has valid content
+    try {
+      const data = await fs.readFile(bannersFile, 'utf-8');
+      const banners = JSON.parse(data.trim() || '{}');
+      
+      // Check if all three required pages exist
+      const requiredPages = ['parent-form', 'nanny-form', 'contact'];
+      needsInitialization = !requiredPages.every(page => banners[page]);
+    } catch {
+      // File doesn't exist or is invalid, needs initialization
+      needsInitialization = true;
+    }
+    
+    if (needsInitialization) {
+      const defaultBanners: Record<string, BannerImage> = {
+        'parent-form': {
+          id: randomUUID(),
+          pageKey: 'parent-form',
+          imageUrl: '',
+          updatedAt: new Date(),
+        },
+        'nanny-form': {
+          id: randomUUID(),
+          pageKey: 'nanny-form',
+          imageUrl: '',
+          updatedAt: new Date(),
+        },
+        'contact': {
+          id: randomUUID(),
+          pageKey: 'contact',
+          imageUrl: '',
+          updatedAt: new Date(),
+        },
+      };
+      
+      await fs.writeFile(bannersFile, JSON.stringify(defaultBanners, null, 2));
+      console.log('✓ Banner storage initialized with default structure');
+    }
+  } catch (error) {
+    console.error('Failed to initialize banner storage:', error);
+    throw error;
+  }
+}

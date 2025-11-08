@@ -6,6 +6,7 @@ import passport from "./auth";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ensureAdminExists } from "./init-db";
+import { initializeBannerStorage } from "./storage";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
@@ -127,6 +128,9 @@ app.use((req, res, next) => {
 (async () => {
   // Initialize database and ensure admin user exists
   await ensureAdminExists();
+  
+  // Initialize banner storage with default structure
+  await initializeBannerStorage();
   
   const server = await registerRoutes(app);
 
