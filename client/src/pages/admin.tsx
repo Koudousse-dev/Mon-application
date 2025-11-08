@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import PushNotificationToggle from "@/components/admin/PushNotificationToggle";
 import type { 
   ParentRequest, 
   NannyApplication, 
@@ -692,6 +693,11 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Push Notifications Toggle */}
+        <div className="mb-6">
+          <PushNotificationToggle />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
