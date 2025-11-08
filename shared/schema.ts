@@ -228,6 +228,7 @@ export const bannerImages = pgTable("banner_images", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   pageKey: text("page_key").notNull().unique(), // 'parent-form', 'nanny-form', 'contact'
   imageUrl: text("image_url").notNull(),
+  version: integer("version").default(0).notNull(), // Cache-busting version
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
