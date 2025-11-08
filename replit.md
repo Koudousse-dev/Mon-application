@@ -28,9 +28,26 @@ Preferred communication style: Simple, everyday language.
 **Protected Routes:** Admin dashboard and management endpoints require authentication; public API endpoints are open.
 
 ### System Features
-**Admin Dashboard:** Statistics cards, tabbed interface with collapsible detail cards, real-time status management for requests and applications, CRUD for services and site parameters, employee management (including nanny application acceptance and payment creation), payment provider configuration, and admin profile editing.
-**Notification System:** In-app notifications in the admin dashboard (badge counter, popover list) for new requests, applications, messages, and matches.
+**Admin Dashboard:** Statistics cards, tabbed interface with collapsible detail cards, real-time status management for requests and applications, CRUD for services and site parameters, employee management (including nanny application acceptance and payment creation), payment provider configuration, admin profile editing, and push notification management toggle.
+**Notification System:** 
+- **In-app notifications**: Badge counter and popover list in admin dashboard for new requests, applications, messages, and matches.
+- **Push notifications**: Web Push API integration allowing admins to receive real-time notifications on their devices (phone/desktop) for new parent requests, nanny applications, and contact messages. Features include:
+  - Service Worker registration for offline notification handling
+  - Subscription management via admin dashboard toggle
+  - Automatic cleanup of expired subscriptions
+  - Secured VAPID keys (environment variables required in production)
+  - Browser notification permission requests
 **Matching System:** Algorithm in `shared/matching.ts` calculates compatibility scores based on various criteria. Displays suggestions and call-to-action buttons. Generates notifications for high-scoring matches.
+**Banner Image Management:** Admin-editable hero banners for parent form, nanny form, and contact pages with:
+- Secure upload with react-easy-crop integration for image cropping
+- Deterministic file naming (parent-form.jpg, nanny-form.jpg, contact.jpg) with physical file overwriting
+- Cache-busting HTTP headers (Cache-Control: no-cache) to ensure immediate UI updates
+- Stored in Replit Object Storage (if enabled) or PostgreSQL as base64
+**Splash Screen:** Professional loading screen with 0-100% progress animation displayed on app startup, featuring:
+- Branded gradient background (green to orange)
+- Animated logo and progress bar
+- Framer Motion animations for smooth transitions
+- 2-second loading duration with fade-out effect
 
 ## External Dependencies
 
