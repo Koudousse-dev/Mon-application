@@ -9,7 +9,11 @@ export function useBannerImage(pageKey: "parent-form" | "nanny-form" | "contact"
     throwOnError: false,
   });
 
-  // Return banner image URL if available, otherwise fallback
-  // No timestamp needed - server sends no-cache headers and file is physically overwritten
-  return banner?.imageUrl || fallbackImage;
+  // Return banner image URL with version for cache-busting
+  if (banner?.imageUrl) {
+    const version = banner.version || 0;
+    return `${banner.imageUrl}?v=${version}`;
+  }
+  
+  return fallbackImage;
 }
