@@ -74,6 +74,49 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   );
 }
 
+// Helper function to send push notifications to all subscribed admins
+async function sendPushToAdmins(title: string, message: string, data?: any) {
+  try {
+    const subscriptions = await storage.getPushSubscriptions();
+    
+    if (subscriptions.length === 0) {
+      console.log('ℹ️  No push subscriptions found, skipping push notification');
+      return;
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body: message,
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      data: data || {}
+    });
+
+    const results = await Promise.allSettled(
+      subscriptions.map(sub => 
+        webpush.sendNotification(
+          JSON.parse(sub.subscription),
+          payload
+        ).catch(err => {
+          // Handle expired/invalid subscriptions
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            console.log(`🗑️  Removing invalid subscription: ${sub.id}`);
+            return storage.deletePushSubscription(sub.id);
+          }
+          throw err;
+        })
+      )
+    );
+
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    const failureCount = results.filter(r => r.status === 'rejected').length;
+    
+    console.log(`✓ Push notifications sent: ${successCount} succeeded, ${failureCount} failed`);
+  } catch (error) {
+    console.error('❌ Error sending push notifications:', error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Simple HTML login page (no React, no frameworks)
@@ -548,6 +591,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         relatedId: request.id
       });
 
+      // Send push notification to admins
+      await sendPushToAdmins(
+        "Nouvelle demande parent",
+        `${request.nom} a soumis une demande pour ${request.typeService}`,
+        { type: "nouvelle_demande", id: request.id }
+      );
+
       // Check for potential matches
       const nannies = await storage.getNannyApplications();
       const bestMatch = getBestMatchForRequest(request, nannies);
@@ -611,6 +661,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `${application.nom} a postulé pour ${application.typePoste}`,
         relatedId: application.id
       });
+
+      // Send push notification to admins
+      await sendPushToAdmins(
+        "Nouvelle candidature nounou",
+        `${application.nom} a postulé pour ${application.typePoste}`,
+        { type: "nouvelle_candidature", id: application.id }
+      );
 
       // Check for potential matches with pending parent requests
       const requests = await storage.getParentRequests();
@@ -693,6 +750,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `${message.nom} a envoyé un message`,
         relatedId: message.id
       });
+
+      // Send push notification to admins
+      await sendPushToAdmins(
+        "Nouveau message de contact",
+        `${message.nom} a envoyé un message`,
+        { type: "nouveau_message", id: message.id }
+      );
       
       res.json(message);
     } catch (error) {
