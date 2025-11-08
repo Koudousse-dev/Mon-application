@@ -1,0 +1,275 @@
+==> Deploying...
+==> Running 'npm run start'
+> rest-express@1.0.0 start
+> npm run db:migrate && NODE_ENV=production node dist/index.js
+> rest-express@1.0.0 db:migrate
+> drizzle-kit push --force
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/render/project/src/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[⣽] Pulling schema from database...
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[✓] Pulling schema from database...
+Is banner_images table created or renamed from another table?
+❯ + banner_images           create table
+  ~ session › banner_images rename tableℹ Object Storage disabled (using base64 storage)
+  To enable: create bucket in Replit UI (Tools → App Storage)
+  Then set ENABLE_OBJECT_STORAGE=true environment variable
+✓ Admin user already exists
+✓ Banner storage initialized with default structure
+9:11:38 PM [express] ✅ Server running on http://0.0.0.0:10000
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://www.garde-enfants-gabon.com + 2 more domains
+==> 
+==> ///////////////////////////////////////////////////////////
+9:11:59 PM [express] GET /api/auth/user 401 in 6ms :: {"message":"Non authentifié"}
+9:12:05 PM [express] GET /api/auth/user 304 in 4ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:12:05 PM [express] GET /api/notifications/unread 304 in 98ms :: []
+9:12:10 PM [express] GET /api/auth/user 304 in 3ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:12:11 PM [express] GET /api/notifications/unread 304 in 281ms :: []
+9:12:11 PM [express] GET /api/nanny-applications 304 in 295ms :: []
+9:12:11 PM [express] GET /api/contact-messages 304 in 202ms :: []
+9:12:11 PM [express] GET /api/employees 304 in 96ms :: []
+9:12:11 PM [express] GET /api/parent-requests 304 in 9ms :: []
+9:12:13 PM [express] GET /api/push/vapid-public-key 304 in 4ms :: {"publicKey":"BGYt0CY9-hSxFwn-cKTH…
+Push subscription error: NeonDbError: relation "push_subscriptions" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:40:20)
+    at async DbStorage.getPushSubscriptionByEndpoint (file:///opt/render/project/src/dist/index.js:864:19)
+    at async file:///opt/render/project/src/dist/index.js:2214:24 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '73',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:12:16 PM [express] POST /api/push/subscribe 500 in 33ms :: {"message":"Erreur lors de l'abonnement…
+9:12:18 PM [express] GET /api/push/vapid-public-key 304 in 4ms :: {"publicKey":"BGYt0CY9-hSxFwn-cKTH…
+Push subscription error: NeonDbError: relation "push_subscriptions" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:40:20)
+    at async DbStorage.getPushSubscriptionByEndpoint (file:///opt/render/project/src/dist/index.js:864:19)
+    at async file:///opt/render/project/src/dist/index.js:2214:24 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '73',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:12:18 PM [express] POST /api/push/subscribe 500 in 8ms :: {"message":"Erreur lors de l'abonnement"…
+9:12:22 PM [express] GET /api/auth/user 304 in 3ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+❌ Erreur dans /api/banners/:pageKey : NeonDbError: relation "banner_images" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:40:20)
+    at async DbStorage.getBannerImage (file:///opt/render/project/src/dist/index.js:834:22)
+    at async file:///opt/render/project/src/dist/index.js:2172:22 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '68',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:12:23 PM [express] GET /api/banners/parent-form 500 in 63ms :: {"message":"Erreur serveur","detail…
+9:12:23 PM [express] GET /api/prestations 304 in 13ms :: []
+Banner upload error: NeonDbError: relation "banner_images" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:40:20)
+    at async DbStorage.upsertBannerImage (file:///opt/render/project/src/dist/index.js:838:30)
+    at async file:///opt/render/project/src/dist/index.js:2153:22 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '68',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:12:34 PM [express] POST /api/banners/upload 500 in 79ms :: {"message":"Erreur lors de l'upload de …
+9:12:42 PM [express] GET /api/auth/user 304 in 3ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:12:43 PM [express] GET /api/auth/user 304 in 3ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:12:45 PM [express] GET /api/notifications/unread 304 in 102ms :: []
+9:12:45 PM [express] GET /api/employees 304 in 262ms :: []
+9:12:45 PM [express] GET /api/contact-messages 304 in 202ms :: []
+9:12:45 PM [express] GET /api/parent-requests 304 in 87ms :: []
+9:12:45 PM [express] GET /api/nanny-applications 304 in 89ms :: []
+Push unsubscribe error: NeonDbError: relation "push_subscriptions" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DbStorage.deletePushSubscription (file:///opt/render/project/src/dist/index.js:868:5)
+    at async file:///opt/render/project/src/dist/index.js:2234:7 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '13',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:12:47 PM [express] POST /api/push/unsubscribe 500 in 8ms :: {"message":"Erreur lors du désabonneme…
+Push unsubscribe error: NeonDbError: relation "push_subscriptions" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DbStorage.deletePushSubscription (file:///opt/render/project/src/dist/index.js:868:5)
+    at async file:///opt/render/project/src/dist/index.js:2234:7 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '13',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:12:50 PM [express] POST /api/push/unsubscribe 500 in 9ms :: {"message":"Erreur lors du désabonneme…
+9:12:57 PM [express] GET /api/auth/user 304 in 4ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:12:58 PM [express] GET /api/parent-requests 304 in 18ms :: []
+9:12:58 PM [express] GET /api/nanny-applications 304 in 8ms :: []
+9:12:58 PM [express] GET /api/employees 304 in 197ms :: []
+9:12:58 PM [express] GET /api/notifications/unread 304 in 95ms :: []
+9:12:58 PM [express] GET /api/contact-messages 304 in 6ms :: []
+9:13:01 PM [express] GET /api/auth/user 401 in 4ms :: {"message":"Non authentifié"}
+9:13:02 PM [express] GET /api/push/vapid-public-key 304 in 4ms :: {"publicKey":"BGYt0CY9-hSxFwn-cKTH…
+Push subscription error: NeonDbError: relation "push_subscriptions" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:40:20)
+    at async DbStorage.getPushSubscriptionByEndpoint (file:///opt/render/project/src/dist/index.js:864:19)
+    at async file:///opt/render/project/src/dist/index.js:2214:24 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '73',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:13:03 PM [express] POST /api/push/subscribe 500 in 21ms :: {"message":"Erreur lors de l'abonnement…
+9:13:10 PM [express] GET /api/auth/user 304 in 4ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:13:11 PM [express] GET /api/notifications/unread 304 in 93ms :: []
+9:13:11 PM [express] GET /api/nanny-applications 304 in 103ms :: []
+9:13:11 PM [express] GET /api/employees 304 in 98ms :: []
+9:13:11 PM [express] GET /api/parent-requests 304 in 320ms :: []
+9:13:11 PM [express] GET /api/contact-messages 304 in 6ms :: []
+Push unsubscribe error: NeonDbError: relation "push_subscriptions" does not exist
+    at execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DbStorage.deletePushSubscription (file:///opt/render/project/src/dist/index.js:868:5)
+    at async file:///opt/render/project/src/dist/index.js:2234:7 {
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '13',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable',
+  sourceError: undefined
+}
+9:13:50 PM [express] POST /api/push/unsubscribe 500 in 19ms :: {"message":"Erreur lors du désabonnem…
+9:13:57 PM [express] GET /api/parent-requests 304 in 56ms :: []
+9:13:57 PM [express] GET /api/nanny-applications 304 in 112ms :: []
+9:13:57 PM [express] GET /api/notifications/unread 304 in 99ms :: []
+9:13:57 PM [express] GET /api/auth/user 304 in 9ms :: {"user":{"id":"bcf1b829-473c-4a54-8e5b-0ff1b77…
+9:13:57 PM [express] GET /api/employees 304 in 8ms :: []
+9:13:57 PM [express] GET /api/contact-messages 304 in 9ms :: []
+9:14:01 PM [express] GET /api/auth/user 401 in 4ms :: {"message":"Non authentifié"}
+9:15:02 PM [express] GET /api/auth/user 401 in 4ms :: {"message":"Non authentifié"}
+==> Detected service running on port 10000

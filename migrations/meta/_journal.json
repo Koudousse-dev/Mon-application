@@ -8,6 +8,13 @@
       "when": 1761971180387,
       "tag": "0000_wandering_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762636935170,
+      "tag": "0001_clumsy_luminals",
+      "breakpoints": true
     }
   ]
 }
