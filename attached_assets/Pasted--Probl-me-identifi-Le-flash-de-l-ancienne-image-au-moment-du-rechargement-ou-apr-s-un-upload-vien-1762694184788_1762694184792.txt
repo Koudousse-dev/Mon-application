@@ -1,0 +1,77 @@
+💬 Problème identifié
+Le flash de l’ancienne image au moment du rechargement ou après un upload vient du comportement par défaut de React Query (TanStack). Lorsqu’on invalide une query avec queryClient.invalidateQueries(), React Query affiche immédiatement la donnée en cache (stale) pendant qu’il refait le fetch en arrière-plan.
+Résultat : pendant quelques millisecondes, le composant <img> reçoit encore le src avec l’ancienne version (ex : ?v=1), puis se met à jour vers la nouvelle (?v=2). C’est ce bref décalage qui provoque le flash visuel.
+
+⚙️ Diagnostic technique
+
+
+invalidateQueries() ne remplace pas la donnée, il déclenche simplement un refetch asynchrone.
+
+
+React Query applique une stratégie stale-while-revalidate, donc l’ancienne donnée reste affichée le temps que la nouvelle soit reçue.
+
+
+Comme la bannière est une image (chargée par le navigateur indépendamment du cycle React), le rendu de l’ancienne persiste visuellement, même si le cache est remplacé ensuite.
+
+
+
+✅ Solution technique recommandée
+La solution consiste à mettre à jour immédiatement le cache React Query après l’upload — avant même que le refetch n’ait lieu.
+En clair : dès que le serveur retourne { imageUrl, version } après l’upload, on pousse cette nouvelle valeur directement dans le cache via queryClient.setQueryData().
+Exemple :
+const mutation = useMutation({
+  mutationFn: uploadBanner,
+  onSuccess: (data) => {
+    // data = { imageUrl, version }
+    queryClient.setQueryData(["/api/banners", pageKey], data);
+
+    // (Optionnel) puis déclencher un refetch en arrière-plan
+    queryClient.invalidateQueries(["/api/banners", pageKey]);
+  },
+});
+
+Pourquoi ça fonctionne :
+
+
+setQueryData met instantanément à jour le cache pour la clé ['/api/banners', pageKey].
+
+
+Le hook useQuery utilisé dans useBannerImage renverra donc immédiatement la nouvelle URL (${imageUrl}?v=${version}) au lieu de l’ancienne.
+
+
+Aucun « flash » n’a lieu, puisque React ne réaffiche plus la donnée stale.
+
+
+Ensuite, l’invalidation déclenche un refetch silencieux pour s’assurer que les données serveur sont bien alignées, mais sans impacter l’UI.
+
+
+
+✨ Option d’amélioration UX
+Pour une transition parfaite (zéro flicker même en cas de latence réseau), tu peux précharger la nouvelle image avant de mettre à jour le cache.
+Exemple :
+const handleUploadSuccess = (data) => {
+  const img = new Image();
+  img.onload = () => {
+    queryClient.setQueryData(["/api/banners", pageKey], data);
+  };
+  img.src = `${data.imageUrl}?v=${data.version}`;
+};
+
+De cette manière, React Query ne bascule sur la nouvelle image qu’une fois qu’elle est prête à être affichée.
+
+🚀 TL;DR
+
+
+Le flash vient du mode stale-while-revalidate de React Query.
+
+
+Il ne faut pas se contenter d’un invalidateQueries.
+
+
+La solution propre : mettre à jour le cache avec setQueryData dans onSuccess du useMutation.
+
+
+Bonus : précharger la nouvelle image avant de remplacer le cache.
+
+
+Ce pattern est parfaitement aligné avec la doc TanStack et élimine le flash sans introduire de state local ni casser la logique de cache-busting par version.
