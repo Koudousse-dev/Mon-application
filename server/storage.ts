@@ -279,6 +279,7 @@ export class MemStorage implements IStorage {
       horaireDebut: insertPrestation.horaireDebut ?? null,
       horaireFin: insertPrestation.horaireFin ?? null,
       image: insertPrestation.image ?? null,
+      description: insertPrestation.description ?? null,
       actif: true,
       dateCreation: new Date(),
     };
