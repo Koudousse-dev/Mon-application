@@ -1,0 +1,154 @@
+2:08:42 AM [express] GET /api/employees 200 in 140ms :: []
+2:08:48 AM [express] GET /api/push/vapid-public-key 200 in 4ms :: {"publicKey":"BGYt0CY9-hSxFwn-cKTH…
+Push subscription error: DrizzleQueryError: Failed query: select "id", "user_id", "endpoint", "p256dh", "auth", "created_at" from "push_subscriptions" where "push_subscriptions"."endpoint" = $1
+params: https://fcm.googleapis.com/fcm/send/cehkLNUuICQ:APA91bGYzjbeBFneyhWA_EBD7pkfvGPOo71q5iN2EIwX7lfFrMjo35fWOZ_opnN5PIkTW5nDjG3vuGq41nVMCfnLU1cYHvZn-c4CJUsu4q8AQjfj9rcqRq8ihJuhyHG4MM9i5Tfi4321
+    at NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+    at async DbStorage.getPushSubscriptionByEndpoint (file:///opt/render/project/src/dist/index.js:865:19)
+    at async file:///opt/render/project/src/dist/index.js:2215:24 {
+  query: 'select "id", "user_id", "endpoint", "p256dh", "auth", "created_at" from "push_subscriptions" where "push_subscriptions"."endpoint" = $1',
+  params: [
+    'https://fcm.googleapis.com/fcm/send/cehkLNUuICQ:APA91bGYzjbeBFneyhWA_EBD7pkfvGPOo71q5iN2EIwX7lfFrMjo35fWOZ_opnN5PIkTW5nDjG3vuGq41nVMCfnLU1cYHvZn-c4CJUsu4q8AQjfj9rcqRq8ihJuhyHG4MM9i5Tfi4321'
+  ],
+  cause: NeonDbError: relation "push_subscriptions" does not exist
+      at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:46:14
+      at async NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+      at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+      at async DbStorage.getPushSubscriptionByEndpoint (file:///opt/render/project/src/dist/index.js:865:19)
+      at async file:///opt/render/project/src/dist/index.js:2215:24 {
+    severity: 'ERROR',
+    code: '42P01',
+    detail: undefined,
+    hint: undefined,
+    position: '73',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_relation.c',
+    line: '1449',
+    routine: 'parserOpenTable',
+    sourceError: undefined
+  }
+}
+2:08:51 AM [express] POST /api/push/subscribe 500 in 34ms :: {"message":"Erreur lors de l'abonnement…
+❌ Erreur dans /api/banners/:pageKey : DrizzleQueryError: Failed query: select "id", "page_key", "image_url", "version", "updated_at" from "banner_images" where "banner_images"."page_key" = $1 limit $2
+params: parent-form,1
+    at NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+    at async DbStorage.getBannerImage (file:///opt/render/project/src/dist/index.js:834:21)
+    at async file:///opt/render/project/src/dist/index.js:2173:22 {
+  query: 'select "id", "page_key", "image_url", "version", "updated_at" from "banner_images" where "banner_images"."page_key" = $1 limit $2',
+  params: [ 'parent-form', 1 ],
+  cause: NeonDbError: relation "banner_images" does not exist
+      at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:46:14
+      at async NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+      at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+      at async DbStorage.getBannerImage (file:///opt/render/project/src/dist/index.js:834:21)
+      at async file:///opt/render/project/src/dist/index.js:2173:22 {
+    severity: 'ERROR',
+    code: '42P01',
+    detail: undefined,
+    hint: undefined,
+    position: '68',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_relation.c',
+    line: '1449',
+    routine: 'parserOpenTable',
+    sourceError: undefined
+  }
+}
+2:08:55 AM [express] GET /api/banners/parent-form 500 in 20ms :: {"message":"Erreur serveur","detail…
+2:08:55 AM [express] GET /api/prestations 200 in 11ms :: []
+Banner upload error: DrizzleQueryError: Failed query: select "id", "page_key", "image_url", "version", "updated_at" from "banner_images" where "banner_images"."page_key" = $1 limit $2
+params: parent-form,1
+    at NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+    at async DbStorage.upsertBannerImage (file:///opt/render/project/src/dist/index.js:838:21)
+    at async file:///opt/render/project/src/dist/index.js:2154:22 {
+  query: 'select "id", "page_key", "image_url", "version", "updated_at" from "banner_images" where "banner_images"."page_key" = $1 limit $2',
+  params: [ 'parent-form', 1 ],
+  cause: NeonDbError: relation "banner_images" does not exist
+      at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:46:14
+      at async NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+      at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+      at async DbStorage.upsertBannerImage (file:///opt/render/project/src/dist/index.js:838:21)
+      at async file:///opt/render/project/src/dist/index.js:2154:22 {
+    severity: 'ERROR',
+    code: '42P01',
+    detail: undefined,
+    hint: undefined,
+    position: '68',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_relation.c',
+    line: '1449',
+    routine: 'parserOpenTable',
+    sourceError: undefined
+  }
+}
+2:09:11 AM [express] POST /api/banners/upload 500 in 51ms :: {"message":"Erreur lors de l'upload de …
+Banner upload error: DrizzleQueryError: Failed query: select "id", "page_key", "image_url", "version", "updated_at" from "banner_images" where "banner_images"."page_key" = $1 limit $2
+params: parent-form,1
+    at NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+    at async DbStorage.upsertBannerImage (file:///opt/render/project/src/dist/index.js:838:21)
+    at async file:///opt/render/project/src/dist/index.js:2154:22 {
+  query: 'select "id", "page_key", "image_url", "version", "updated_at" from "banner_images" where "banner_images"."page_key" = $1 limit $2',
+  params: [ 'parent-form', 1 ],
+  cause: NeonDbError: relation "banner_images" does not exist
+      at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:46:14
+      at async NeonHttpPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+      at async NeonHttpPreparedQuery.execute (file:///opt/render/project/src/node_modules/drizzle-orm/neon-http/session.js:45:20)
+      at async DbStorage.upsertBannerImage (file:///opt/render/project/src/dist/index.js:838:21)
+      at async file:///opt/render/project/src/dist/index.js:2154:22 {
+    severity: 'ERROR',
+    code: '42P01',
+    detail: undefined,
+    hint: undefined,
+    position: '68',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_relation.c',
+    line: '1449',
+    routine: 'parserOpenTable',
+    sourceError: undefined
+  }
+}
+2:09:18 AM [express] POST /api/banners/upload 500 in 10ms :: {"message":"Erreur lors de l'upload de …
+==> Detected service running on port 10000
