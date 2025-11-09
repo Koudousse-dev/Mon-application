@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -21,6 +21,8 @@ import AdminParametres from "@/pages/admin-parametres";
 import AdminPaymentConfig from "@/pages/admin-payment-config";
 import MatchingPage from "@/pages/matching";
 import BottomNavigation from "@/components/bottom-navigation";
+
+const INACTIVITY_TIMEOUT = 20 * 60 * 1000;
 
 function Router({ showSplash }: { showSplash: boolean }) {
   return (
@@ -49,14 +51,52 @@ function Router({ showSplash }: { showSplash: boolean }) {
 
 function App() {
   const [showSplash, setShowSplash] = useState(() => {
-    const hasViewedSplash = localStorage.getItem("splash_screen_viewed");
-    return !hasViewedSplash;
+    const lastActivity = localStorage.getItem("lastActivity");
+    if (!lastActivity) {
+      return true;
+    }
+    const elapsed = Date.now() - parseInt(lastActivity, 10);
+    return elapsed >= INACTIVITY_TIMEOUT;
   });
 
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const updateLastActivity = () => {
+    localStorage.setItem("lastActivity", Date.now().toString());
+    
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    
+    inactivityTimerRef.current = setTimeout(() => {
+      setShowSplash(true);
+    }, INACTIVITY_TIMEOUT);
+  };
+
   const handleSplashComplete = () => {
-    localStorage.setItem("splash_screen_viewed", "true");
+    updateLastActivity();
     setShowSplash(false);
   };
+
+  useEffect(() => {
+    updateLastActivity();
+
+    const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    
+    activityEvents.forEach((event) => {
+      window.addEventListener(event, updateLastActivity);
+    });
+
+    return () => {
+      activityEvents.forEach((event) => {
+        window.removeEventListener(event, updateLastActivity);
+      });
+      
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

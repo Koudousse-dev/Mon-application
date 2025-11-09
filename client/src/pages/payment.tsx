@@ -1,10 +1,22 @@
+import { useState } from "react";
 import { ArrowLeft, Clock, Smartphone, CreditCard, Info, Lock } from "lucide-react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { processPayment } from "@/lib/payment";
+import BannerImageEditor from "@/components/admin/BannerImageEditor";
+import { useBannerImage } from "@/hooks/useBannerImage";
+import paymentImage from "@assets/stock_images/warm_african_mother__19616505.jpg";
 
 export default function Payment() {
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
+
+  const { data: user } = useQuery({
+    queryKey: ["/api/admin/profile"],
+  });
+
+  const currentBannerImage = useBannerImage("payment-page", paymentImage);
   const handlePaymentAttempt = async () => {
     const result = await processPayment({
       amount: 50000,
@@ -33,6 +45,22 @@ export default function Payment() {
             <p className="text-sm text-muted-foreground">Bientôt disponible</p>
           </div>
         </div>
+      </div>
+
+      {/* Hero Banner */}
+      <div className="relative">
+        <img 
+          src={bannerImageUrl || currentBannerImage} 
+          alt="Mon paiement" 
+          className="w-full h-48 object-cover"
+        />
+        {user && (
+          <BannerImageEditor
+            pageKey="payment-page"
+            currentImageUrl={currentBannerImage}
+            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+          />
+        )}
       </div>
 
       {/* Content */}

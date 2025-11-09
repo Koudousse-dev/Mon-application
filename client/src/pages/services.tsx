@@ -1,16 +1,27 @@
+import { useState } from "react";
 import { ArrowLeft, Clock, Calendar, CalendarDays, BookOpen, Heart, CreditCard, Shield } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Prestation } from "@shared/schema";
+import BannerImageEditor from "@/components/admin/BannerImageEditor";
+import { useBannerImage } from "@/hooks/useBannerImage";
+import servicesImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jpg";
 
 export default function Services() {
   const [, setLocation] = useLocation();
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
 
   const { data: prestations = [], isLoading } = useQuery<Prestation[]>({
     queryKey: ["/api/prestations"],
   });
+
+  const { data: user } = useQuery({
+    queryKey: ["/api/admin/profile"],
+  });
+
+  const currentBannerImage = useBannerImage("prestations-page", servicesImage);
 
   const getServiceIcon = (serviceId: string) => {
     const icons = {
@@ -44,6 +55,22 @@ export default function Services() {
             <p className="text-sm text-muted-foreground">Nos services professionnels</p>
           </div>
         </div>
+      </div>
+
+      {/* Hero Banner */}
+      <div className="relative">
+        <img 
+          src={bannerImageUrl || currentBannerImage} 
+          alt="Nos prestations et tarifs" 
+          className="w-full h-48 object-cover"
+        />
+        {user && (
+          <BannerImageEditor
+            pageKey="prestations-page"
+            currentImageUrl={currentBannerImage}
+            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+          />
+        )}
       </div>
 
       {/* Services List */}

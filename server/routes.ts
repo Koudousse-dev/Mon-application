@@ -1251,7 +1251,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/banners/:pageKey", async (req, res) => {
     try {
       const { pageKey } = req.params;
-      if (!['parent-form', 'nanny-form', 'contact'].includes(pageKey)) {
+      const validPageKeys = ['parent-form', 'nanny-form', 'contact', 'prestations-page', 'payment-page'];
+      if (!validPageKeys.includes(pageKey)) {
         return res.status(400).json({ message: "pageKey invalide" });
       }
 
@@ -1259,6 +1260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!banner) {
         return res.status(404).json({ message: "Bannière non trouvée" });
       }
+      
+      // Force le navigateur à toujours vérifier la version avant d'afficher
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       
       res.json(banner);
     } catch (error: any) {
@@ -1270,7 +1276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all banner versions for cache-busting
   app.get("/api/banners/versions/all", async (req, res) => {
     try {
-      const pageKeys = ['parent-form', 'nanny-form', 'contact'];
+      const pageKeys = ['parent-form', 'nanny-form', 'contact', 'prestations-page', 'payment-page'];
       const versions: Record<string, number> = {};
       
       for (const pageKey of pageKeys) {

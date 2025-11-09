@@ -180,7 +180,7 @@ export const updateNannyApplicationStatusSchema = z.object({
 export const prestations = pgTable("prestations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   nom: text("nom").notNull(),
-  description: text("description").notNull(),
+  description: text("description"),
   horaireDebut: text("horaire_debut"),
   horaireFin: text("horaire_fin"),
   prix: integer("prix").notNull(),
@@ -249,9 +249,9 @@ export const insertPrestationSchema = createInsertSchema(prestations).omit({
   actif: true,
 }).extend({
   nom: z.string().min(1, "Le nom est obligatoire"),
-  description: z.string().min(1, "La description est obligatoire"),
+  description: z.string().optional(),
   prix: z.number().min(0, "Le prix doit être positif"),
-  unite: z.string().default("FCFA"),
+  unite: z.string().min(1, "L'unité est obligatoire"),
   horaireDebut: z.string().optional(),
   horaireFin: z.string().optional(),
 });
