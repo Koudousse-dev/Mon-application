@@ -42,8 +42,10 @@ Preferred communication style: Simple, everyday language.
 **Banner Image Management:** Admin-editable hero banners for parent form, nanny form, contact, prestations, and payment pages with:
 - Secure upload with react-easy-crop integration for image cropping
 - Deterministic file naming with physical file overwriting
-- Cache-busting via automatic version incrementing and Cache-Control headers (no-cache, must-revalidate)
+- Long-term browser caching (`Cache-Control: public, max-age=31536000, immutable`) for optimal performance
+- Cache-busting via automatic version incrementing (`?v=${version}` query parameter)
 - Stored in PostgreSQL `banner_images` table with base64 encoding and version tracking
+- Image preloading before cache update prevents flash during banner changes
 - Immediate UI updates without browser cache flash (version-based cache invalidation)
 - Supported page keys: parent-form, nanny-form, contact, prestations-page, payment-page
 **Splash Screen:** Professional loading screen with 0-100% progress animation, featuring:
