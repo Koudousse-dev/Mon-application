@@ -31,7 +31,6 @@ export default function NannyForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -41,7 +40,7 @@ export default function NannyForm() {
 
   const user = authData?.user;
   const isAdmin = user?.role === "admin";
-  const currentBannerImage = useBannerImage("nanny-form", nannyFormImage);
+  const bannerImage = useBannerImage("nanny-form", nannyFormImage);
 
   const form = useForm({
     resolver: zodResolver(insertNannyApplicationSchema),
@@ -210,7 +209,7 @@ export default function NannyForm() {
       {/* Header with Image */}
       <div className="relative overflow-hidden">
         <img 
-          src={bannerImageUrl || currentBannerImage} 
+          src={bannerImage} 
           alt="Nounou professionnelle" 
           className="w-full h-48 object-cover"
         />
@@ -230,8 +229,7 @@ export default function NannyForm() {
         {isAdmin && (
           <BannerImageEditor
             pageKey="nanny-form"
-            currentImageUrl={currentBannerImage}
-            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+            currentImageUrl={bannerImage}
           />
         )}
       </div>

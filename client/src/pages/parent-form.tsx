@@ -19,7 +19,6 @@ import { useBannerImage } from "@/hooks/useBannerImage";
 
 export default function ParentForm() {
   const [showSuccess, setShowSuccess] = useState(false);
-  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
   const searchParams = useSearch();
 
   const { data: prestations = [], isLoading: prestationsLoading } = useQuery<Prestation[]>({
@@ -32,7 +31,7 @@ export default function ParentForm() {
 
   const user = authData?.user;
   const isAdmin = user?.role === "admin";
-  const currentBannerImage = useBannerImage("parent-form", parentFormImage);
+  const bannerImage = useBannerImage("parent-form", parentFormImage);
   
   // Parse URL query parameters
   const urlParams = new URLSearchParams(searchParams);
@@ -134,7 +133,7 @@ export default function ParentForm() {
       {/* Header with Image */}
       <div className="relative overflow-hidden">
         <img 
-          src={bannerImageUrl || currentBannerImage} 
+          src={bannerImage} 
           alt="Enfants heureux" 
           className="w-full h-48 object-cover"
         />
@@ -154,8 +153,7 @@ export default function ParentForm() {
         {isAdmin && (
           <BannerImageEditor
             pageKey="parent-form"
-            currentImageUrl={currentBannerImage}
-            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+            currentImageUrl={bannerImage}
           />
         )}
       </div>

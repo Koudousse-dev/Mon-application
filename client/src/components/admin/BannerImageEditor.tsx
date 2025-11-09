@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import type { PageKey } from "@/hooks/useBannerImage";
 
 interface BannerImageEditorProps {
-  pageKey: "parent-form" | "nanny-form" | "contact";
+  pageKey: PageKey;
   currentImageUrl?: string;
-  onImageUpdated?: (newImageUrl: string) => void;
 }
 
 interface Point {
@@ -35,7 +35,6 @@ interface Area {
 export default function BannerImageEditor({
   pageKey,
   currentImageUrl,
-  onImageUpdated,
 }: BannerImageEditorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -147,12 +146,8 @@ export default function BannerImageEditor({
       
       return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/banners/${pageKey}`] });
-      
-      if (onImageUpdated) {
-        onImageUpdated(data.imageUrl);
-      }
 
       toast({
         title: "Image mise à jour",

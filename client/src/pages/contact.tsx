@@ -18,7 +18,6 @@ import { useBannerImage } from "@/hooks/useBannerImage";
 
 export default function Contact() {
   const [showSuccess, setShowSuccess] = useState(false);
-  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
 
   const { data: parametres = [], isLoading: parametresLoading } = useQuery<ParametreSite[]>({
     queryKey: ["/api/parametres-site"],
@@ -30,7 +29,7 @@ export default function Contact() {
 
   const user = authData?.user;
   const isAdmin = user?.role === "admin";
-  const currentBannerImage = useBannerImage("contact", contactImage);
+  const bannerImage = useBannerImage("contact", contactImage);
 
   const email = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "email")?.valeur || "contact@gardedesenfantsgabon.com");
   const telephone = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "telephone")?.valeur || "+241 XX XX XX XX");
@@ -107,7 +106,7 @@ export default function Contact() {
       {/* Header with Image */}
       <div className="relative overflow-hidden">
         <img 
-          src={bannerImageUrl || currentBannerImage} 
+          src={bannerImage} 
           alt="Contact - Famille heureuse" 
           className="w-full h-48 object-cover"
         />
@@ -127,8 +126,7 @@ export default function Contact() {
         {isAdmin && (
           <BannerImageEditor
             pageKey="contact"
-            currentImageUrl={currentBannerImage}
-            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+            currentImageUrl={bannerImage}
           />
         )}
       </div>

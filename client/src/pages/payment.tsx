@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ArrowLeft, Clock, Smartphone, CreditCard, Info, Lock } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -10,13 +9,13 @@ import { useBannerImage } from "@/hooks/useBannerImage";
 import paymentImage from "@assets/stock_images/warm_african_mother__19616505.jpg";
 
 export default function Payment() {
-  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
-
-  const { data: user } = useQuery({
-    queryKey: ["/api/admin/profile"],
+  const { data: authData } = useQuery<any>({
+    queryKey: ["/api/auth/user"],
   });
 
-  const currentBannerImage = useBannerImage("payment-page", paymentImage);
+  const user = authData?.user;
+  const isAdmin = user?.role === "admin";
+  const bannerImage = useBannerImage("payment-page", paymentImage);
   const handlePaymentAttempt = async () => {
     const result = await processPayment({
       amount: 50000,
@@ -32,33 +31,30 @@ export default function Payment() {
 
   return (
     <div className="mobile-container min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-accent p-4 sm:p-6 sticky top-0 z-10">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="text-foreground" data-testid="button-back">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div>
-            <h2 className="text-xl font-bold text-foreground font-heading">Mon paiement</h2>
-            <p className="text-sm text-muted-foreground">Bientôt disponible</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Banner */}
-      <div className="relative">
+      {/* Header with Image */}
+      <div className="relative overflow-hidden">
         <img 
-          src={bannerImageUrl || currentBannerImage} 
+          src={bannerImage} 
           alt="Mon paiement" 
           className="w-full h-48 object-cover"
         />
-        {user && (
+        <div className="absolute inset-0 bg-gradient-to-t from-accent/90 to-accent/40 flex items-end p-4 sm:p-6">
+          <div className="flex items-center gap-4 w-full">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="text-white" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h2 className="text-xl font-bold text-white font-heading">Mon paiement</h2>
+              <p className="text-sm text-white/90">Bientôt disponible</p>
+            </div>
+          </div>
+        </div>
+        {isAdmin && (
           <BannerImageEditor
             pageKey="payment-page"
-            currentImageUrl={currentBannerImage}
-            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+            currentImageUrl={bannerImage}
           />
         )}
       </div>

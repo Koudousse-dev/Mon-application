@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import type { BannerImage } from "@shared/schema";
 
-export function useBannerImage(pageKey: "parent-form" | "nanny-form" | "contact", fallbackImage: string) {
+export type PageKey = "parent-form" | "nanny-form" | "contact" | "prestations-page" | "payment-page";
+
+export function useBannerImage(pageKey: PageKey, fallbackImage: string) {
   const { data: banner } = useQuery<BannerImage>({
     queryKey: [`/api/banners/${pageKey}`],
     retry: false,

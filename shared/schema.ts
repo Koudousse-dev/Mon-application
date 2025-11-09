@@ -226,7 +226,7 @@ export const paiementsEmployes = pgTable("paiements_employes", {
 // Table des images de bannière (hero images pour les pages)
 export const bannerImages = pgTable("banner_images", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  pageKey: text("page_key").notNull().unique(), // 'parent-form', 'nanny-form', 'contact'
+  pageKey: text("page_key").notNull().unique(), // 'parent-form', 'nanny-form', 'contact', 'prestations-page', 'payment-page'
   imageUrl: text("image_url").notNull(),
   version: integer("version").default(0).notNull(), // Cache-busting version
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -343,7 +343,7 @@ export const insertBannerImageSchema = createInsertSchema(bannerImages).omit({
   id: true,
   updatedAt: true,
 }).extend({
-  pageKey: z.enum(["parent-form", "nanny-form", "contact"]),
+  pageKey: z.enum(["parent-form", "nanny-form", "contact", "prestations-page", "payment-page"]),
   imageUrl: z.string().min(1, "L'URL de l'image est obligatoire"),
 });
 

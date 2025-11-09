@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ArrowLeft, Clock, Calendar, CalendarDays, BookOpen, Heart, CreditCard, Shield } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -11,17 +10,18 @@ import servicesImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jp
 
 export default function Services() {
   const [, setLocation] = useLocation();
-  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
 
   const { data: prestations = [], isLoading } = useQuery<Prestation[]>({
     queryKey: ["/api/prestations"],
   });
 
-  const { data: user } = useQuery({
-    queryKey: ["/api/admin/profile"],
+  const { data: authData } = useQuery<any>({
+    queryKey: ["/api/auth/user"],
   });
 
-  const currentBannerImage = useBannerImage("prestations-page", servicesImage);
+  const user = authData?.user;
+  const isAdmin = user?.role === "admin";
+  const bannerImage = useBannerImage("prestations-page", servicesImage);
 
   const getServiceIcon = (serviceId: string) => {
     const icons = {
@@ -42,33 +42,30 @@ export default function Services() {
 
   return (
     <div className="mobile-container min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-secondary p-4 sm:p-6 sticky top-0 z-10">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="text-foreground" data-testid="button-back">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div>
-            <h2 className="text-xl font-bold text-foreground font-heading">Prestations & Tarifs</h2>
-            <p className="text-sm text-muted-foreground">Nos services professionnels</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Banner */}
-      <div className="relative">
+      {/* Header with Image */}
+      <div className="relative overflow-hidden">
         <img 
-          src={bannerImageUrl || currentBannerImage} 
+          src={bannerImage} 
           alt="Nos prestations et tarifs" 
           className="w-full h-48 object-cover"
         />
-        {user && (
+        <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 to-secondary/40 flex items-end p-4 sm:p-6">
+          <div className="flex items-center gap-4 w-full">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="text-white" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h2 className="text-xl font-bold text-white font-heading">Prestations & Tarifs</h2>
+              <p className="text-sm text-white/90">Nos services professionnels</p>
+            </div>
+          </div>
+        </div>
+        {isAdmin && (
           <BannerImageEditor
             pageKey="prestations-page"
-            currentImageUrl={currentBannerImage}
-            onImageUpdated={(newUrl) => setBannerImageUrl(newUrl)}
+            currentImageUrl={bannerImage}
           />
         )}
       </div>

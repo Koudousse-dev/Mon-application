@@ -1198,7 +1198,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { pageKey } = req.body;
-      if (!pageKey || !['parent-form', 'nanny-form', 'contact'].includes(pageKey)) {
+      const validPageKeys = ['parent-form', 'nanny-form', 'contact', 'prestations-page', 'payment-page'];
+      if (!pageKey || !validPageKeys.includes(pageKey)) {
         return res.status(400).json({ message: "pageKey invalide" });
       }
 
