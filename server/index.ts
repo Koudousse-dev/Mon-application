@@ -8,7 +8,6 @@ import { setupVite, serveStatic, log } from "./vite";
 import { ensureAdminExists } from "./init-db";
 import { initializeBannerStorage } from "./storage";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 
 
 const app = express();
@@ -25,15 +24,6 @@ if (isDevelopment) {
   // Production: Full security
   app.use(helmet());
 }
-
-// 🚦 Limite le nombre de requêtes par IP pour éviter les abus
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isDevelopment ? 500 : 100, // Higher limit in dev for HMR and asset loading
-  standardHeaders: true, // ajoute les headers RateLimit-*
-  legacyHeaders: false,
-});
-app.use(limiter);
 
 const PgStore = connectPgSimple(session);
 
