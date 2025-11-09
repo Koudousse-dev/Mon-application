@@ -700,44 +700,45 @@ export default function AdminDashboard() {
           <PushNotificationToggle />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
           <Button
             onClick={() => setLocation("/admin/prestations")}
             size="lg"
             variant="outline"
-            className="w-full"
+            className="w-full min-h-[44px] md:min-h-[48px]"
             data-testid="button-prestations"
           >
-            <FileText className="w-5 h-5 mr-2" />
-            Prestations
+            <FileText className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+            <span className="text-sm md:text-base whitespace-nowrap overflow-hidden text-ellipsis">Prestations</span>
           </Button>
           <Button
             onClick={() => setLocation("/admin/parametres")}
             size="lg"
             variant="outline"
-            className="w-full"
+            className="w-full min-h-[44px] md:min-h-[48px]"
             data-testid="button-parametres"
           >
-            <Settings className="w-5 h-5 mr-2" />
-            Paramètres
+            <Settings className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+            <span className="text-sm md:text-base whitespace-nowrap overflow-hidden text-ellipsis">Paramètres</span>
           </Button>
           <Button
             onClick={() => setLocation("/admin/payment-config")}
             size="lg"
             variant="outline"
-            className="w-full"
+            className="w-full min-h-[44px] md:min-h-[48px]"
             data-testid="button-payment-config"
           >
-            <CreditCard className="w-5 h-5 mr-2" />
-            Moyens de paiement
+            <CreditCard className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+            <span className="text-sm md:text-base whitespace-nowrap overflow-hidden text-ellipsis">Moyens de paiement</span>
           </Button>
           <Button
             onClick={() => setLocation("/admin/matching")}
             size="lg"
+            className="w-full min-h-[44px] md:min-h-[48px]"
             data-testid="button-matching"
           >
-            <Heart className="w-5 h-5 mr-2" />
-            Matching
+            <Heart className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+            <span className="text-sm md:text-base whitespace-nowrap overflow-hidden text-ellipsis">Matching</span>
           </Button>
         </div>
 
