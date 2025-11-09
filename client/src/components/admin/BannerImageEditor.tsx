@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { PageKey } from "@/hooks/useBannerImage";
+import type { BannerImage } from "@shared/schema";
 
 interface BannerImageEditorProps {
   pageKey: PageKey;
@@ -146,7 +147,7 @@ export default function BannerImageEditor({
       
       return await response.json();
     },
-    onSuccess: (data: { imageUrl: string; version: number }) => {
+    onSuccess: (data: BannerImage) => {
       const img = new Image();
       img.onload = () => {
         queryClient.setQueryData([`/api/banners/${pageKey}`], data);
