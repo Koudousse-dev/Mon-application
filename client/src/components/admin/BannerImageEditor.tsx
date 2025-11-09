@@ -146,17 +146,35 @@ export default function BannerImageEditor({
       
       return await response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/banners/${pageKey}`] });
+    onSuccess: (data: { imageUrl: string; version: number }) => {
+      const img = new Image();
+      img.onload = () => {
+        queryClient.setQueryData([`/api/banners/${pageKey}`], data);
+        queryClient.invalidateQueries({ queryKey: [`/api/banners/${pageKey}`] });
 
-      toast({
-        title: "Image mise à jour",
-        description: "La bannière a été changée avec succès",
-      });
+        toast({
+          title: "Image mise à jour",
+          description: "La bannière a été changée avec succès",
+        });
 
-      setIsOpen(false);
-      setImageSrc(null);
-      setIsUploading(false);
+        setIsOpen(false);
+        setImageSrc(null);
+        setIsUploading(false);
+      };
+      img.onerror = () => {
+        queryClient.setQueryData([`/api/banners/${pageKey}`], data);
+        queryClient.invalidateQueries({ queryKey: [`/api/banners/${pageKey}`] });
+
+        toast({
+          title: "Image mise à jour",
+          description: "La bannière a été changée avec succès",
+        });
+
+        setIsOpen(false);
+        setImageSrc(null);
+        setIsUploading(false);
+      };
+      img.src = `${data.imageUrl}?v=${data.version}`;
     },
     onError: (error: any) => {
       toast({
