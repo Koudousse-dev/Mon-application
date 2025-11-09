@@ -47,6 +47,7 @@ export interface IStorage {
   // Contact messages
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   getContactMessages(): Promise<ContactMessage[]>;
+  deleteContactMessage(id: string): Promise<void>;
   
   // Notifications
   createNotification(notification: InsertNotification): Promise<Notification>;
@@ -201,6 +202,10 @@ export class MemStorage implements IStorage {
 
   async getContactMessages(): Promise<ContactMessage[]> {
     return Array.from(this.contactMessages.values());
+  }
+
+  async deleteContactMessage(id: string): Promise<void> {
+    this.contactMessages.delete(id);
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
@@ -502,6 +507,10 @@ export class DbStorage implements IStorage {
 
   async getContactMessages(): Promise<ContactMessage[]> {
     return await db.select().from(contactMessages);
+  }
+
+  async deleteContactMessage(id: string): Promise<void> {
+    await db.delete(contactMessages).where(eq(contactMessages.id, id));
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {

@@ -783,6 +783,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/contact-messages/:id", isAuthenticated, async (req, res) => {
+    try {
+      // Verify admin role
+      if ((req.user as any)?.role !== 'admin') {
+        return res.status(403).json({ message: "Accès réservé aux administrateurs" });
+      }
+
+      const { id } = req.params;
+      await storage.deleteContactMessage(id);
+      res.json({ message: "Message supprimé avec succès" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Erreur lors de la suppression du message", details: error.message });
+    }
+  });
+
   // Notification routes (protected)
   app.post("/api/notifications", isAuthenticated, async (req, res) => {
     try {

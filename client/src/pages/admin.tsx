@@ -551,6 +551,26 @@ export default function AdminDashboard() {
     },
   });
 
+  const deleteContactMessageMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      await apiRequest("DELETE", `/api/contact-messages/${messageId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contact-messages"] });
+      toast({
+        title: "Message supprimé",
+        description: "Le message a été supprimé avec succès",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer le message",
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     if (!userLoading && !user) {
       setLocation("/admin/login");
@@ -1112,12 +1132,29 @@ export default function AdminDashboard() {
               contactMessages.map((message) => (
                 <Card key={message.id} data-testid={`message-card-${message.id}`}>
                   <CardHeader>
-                    <CardTitle className="text-base font-medium">
-                      {message.nom}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {message.telephone}
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base font-medium">
+                          {message.nom}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          {message.telephone}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm(`Êtes-vous sûr de vouloir supprimer le message de ${message.nom} ?`)) {
+                            deleteContactMessageMutation.mutate(message.id);
+                          }
+                        }}
+                        data-testid={`button-delete-message-${message.id}`}
+                        className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm">{message.message}</p>
