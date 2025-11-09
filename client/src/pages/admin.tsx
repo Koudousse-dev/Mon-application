@@ -653,42 +653,42 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Baby className="w-4 h-4 text-primary" />
-                Demandes Parents
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2">
+                <Baby className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+                <span className="whitespace-nowrap">Demandes Parents</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="stat-parent-requests">
+            <CardContent className="pt-2">
+              <div className="text-2xl md:text-3xl font-bold text-center md:text-left" data-testid="stat-parent-requests">
                 {requestsLoading ? "..." : parentRequests.length}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" />
-                Candidatures Nounous
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2">
+                <Users className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+                <span className="whitespace-nowrap">Candidatures Nounous</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="stat-nanny-applications">
+            <CardContent className="pt-2">
+              <div className="text-2xl md:text-3xl font-bold text-center md:text-left" data-testid="stat-nanny-applications">
                 {applicationsLoading ? "..." : nannyApplications.length}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                Messages Contact
+            <CardHeader className="pb-3 md:pb-4">
+              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2">
+                <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+                <span className="whitespace-nowrap">Messages Contact</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="stat-contact-messages">
+            <CardContent className="pt-2">
+              <div className="text-2xl md:text-3xl font-bold text-center md:text-left" data-testid="stat-contact-messages">
                 {messagesLoading ? "..." : contactMessages.length}
               </div>
             </CardContent>
