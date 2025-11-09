@@ -654,9 +654,9 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-3 md:pb-4">
-              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2">
+              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2 min-w-0">
                 <Baby className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
-                <span className="whitespace-nowrap">Demandes Parents</span>
+                <span className="truncate">Demandes Parents</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
@@ -668,9 +668,9 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="pb-3 md:pb-4">
-              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2">
+              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2 min-w-0">
                 <Users className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
-                <span className="whitespace-nowrap">Candidatures Nounous</span>
+                <span className="truncate">Candidatures Nounous</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
@@ -682,9 +682,9 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="pb-3 md:pb-4">
-              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2">
+              <CardTitle className="text-sm md:text-base font-medium flex items-center justify-start gap-2 min-w-0">
                 <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
-                <span className="whitespace-nowrap">Messages Contact</span>
+                <span className="truncate">Messages Contact</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
