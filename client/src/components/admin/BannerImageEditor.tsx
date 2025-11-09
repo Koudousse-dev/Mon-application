@@ -151,7 +151,6 @@ export default function BannerImageEditor({
       const img = new Image();
       img.onload = () => {
         queryClient.setQueryData([`/api/banners/${pageKey}`], data);
-        queryClient.invalidateQueries({ queryKey: [`/api/banners/${pageKey}`] });
 
         toast({
           title: "Image mise à jour",
@@ -164,7 +163,6 @@ export default function BannerImageEditor({
       };
       img.onerror = () => {
         queryClient.setQueryData([`/api/banners/${pageKey}`], data);
-        queryClient.invalidateQueries({ queryKey: [`/api/banners/${pageKey}`] });
 
         toast({
           title: "Image mise à jour",
