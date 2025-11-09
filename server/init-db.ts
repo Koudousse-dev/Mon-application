@@ -10,7 +10,7 @@ const initDb = () => {
     throw new Error("DATABASE_URL environment variable is not defined");
   }
   const sql = neon(databaseUrl);
-  return drizzle(sql);
+  return drizzle({ client: sql });
 };
 
 export async function ensureAdminExists() {

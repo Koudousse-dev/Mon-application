@@ -11,7 +11,7 @@ const initDb = () => {
     throw new Error("DATABASE_URL environment variable is not defined");
   }
   const sql = neon(databaseUrl);
-  return drizzle(sql);
+  return drizzle({ client: sql });
 };
 
 const db = initDb();
@@ -742,20 +742,24 @@ export class DbStorage implements IStorage {
   }
 
   async getBannerImage(pageKey: string): Promise<BannerImage | undefined> {
-    const [banner] = await db
+    const results = await db
       .select()
       .from(bannerImages)
-      .where(eq(bannerImages.pageKey, pageKey));
+      .where(eq(bannerImages.pageKey, pageKey))
+      .limit(1);
     
-    return banner;
+    return results?.[0];
   }
 
   async upsertBannerImage(pageKey: string, imageUrl: string): Promise<BannerImage> {
     // Check if banner exists
-    const [existingBanner] = await db
+    const results = await db
       .select()
       .from(bannerImages)
-      .where(eq(bannerImages.pageKey, pageKey));
+      .where(eq(bannerImages.pageKey, pageKey))
+      .limit(1);
+    
+    const existingBanner = results?.[0];
     
     if (existingBanner) {
       // Update existing banner and increment version
