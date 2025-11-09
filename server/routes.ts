@@ -1412,14 +1412,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile('sw.js', { root: './public' });
   });
 
-  // Serve uploaded banner images as static files with no-cache headers
+  // Serve uploaded banner images as static files with caching enabled
+  // Cache busting is handled via version query parameter (?v=123) on the frontend
   const express = await import('express');
   app.use('/uploads/banners', express.default.static('uploads/banners', {
     setHeaders: (res) => {
-      // Disable caching to prevent showing old images after updates
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+      // Enable caching for 1 year - cache busting handled by ?v= query parameter
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
   }));
   
