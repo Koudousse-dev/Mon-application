@@ -87,8 +87,8 @@ async function sendPushToAdmins(title: string, message: string, data?: any) {
     const payload = JSON.stringify({
       title,
       body: message,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: '/icon-192.png',
+      badge: '/badge-96.png',
       data: data || {}
     });
 
