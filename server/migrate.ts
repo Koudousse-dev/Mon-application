@@ -37,29 +37,39 @@ async function runMigrations() {
       );
     `;
     
-    // Check if prestations.description is still NOT NULL and drop constraint if needed
-    const descriptionConstraint = await sql`
-      SELECT is_nullable 
-      FROM information_schema.columns 
-      WHERE table_name = 'prestations' 
-      AND column_name = 'description';
-    `;
-    
-    if (descriptionConstraint.length > 0 && descriptionConstraint[0].is_nullable === 'NO') {
-      console.log("🔄 Making prestations.description nullable...");
-      await sql`
-        ALTER TABLE prestations 
-        ALTER COLUMN description DROP NOT NULL;
+    // Try to make prestations.description nullable (may fail due to permissions in production)
+    try {
+      const descriptionConstraint = await sql`
+        SELECT is_nullable 
+        FROM information_schema.columns 
+        WHERE table_name = 'prestations' 
+        AND column_name = 'description';
       `;
-      console.log("✅ prestations.description is now nullable");
-    } else {
-      console.log("✅ prestations.description already nullable (skipped)");
+      
+      if (descriptionConstraint.length > 0 && descriptionConstraint[0].is_nullable === 'NO') {
+        console.log("🔄 Making prestations.description nullable...");
+        await sql`
+          ALTER TABLE prestations 
+          ALTER COLUMN description DROP NOT NULL;
+        `;
+        console.log("✅ prestations.description is now nullable");
+      } else {
+        console.log("✅ prestations.description already nullable (skipped)");
+      }
+    } catch (error: any) {
+      // Only handle permission errors gracefully - re-throw everything else
+      if (error.code === '42501') {
+        console.log("⚠️  Could not modify prestations.description (insufficient permissions)");
+        console.log("   This is expected in production - existing prestations already have descriptions");
+      } else {
+        console.error("❌ Unexpected error while modifying prestations.description:", error);
+        throw error;
+      }
     }
     
     console.log("✅ Migrations completed successfully");
     console.log("   - banner_images table ready");
     console.log("   - push_subscriptions table ready");
-    console.log("   - prestations schema updated");
     process.exit(0);
   } catch (error) {
     console.error("❌ Migration failed:", error);
