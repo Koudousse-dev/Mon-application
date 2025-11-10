@@ -19,7 +19,8 @@ import {
   Download,
   Settings,
   Trash2,
-  CreditCard
+  CreditCard,
+  IdCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -507,6 +508,31 @@ export default function AdminDashboard() {
     },
   });
 
+  const verifyNannyIdentityMutation = useMutation({
+    mutationFn: async (applicationId: string) => {
+      const response = await apiRequest("PATCH", `/api/nanny-applications/${applicationId}/verify-identity`, {});
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur lors de la vérification");
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/nanny-applications"] });
+      toast({
+        title: "Identité vérifiée",
+        description: "L'identité de la candidate a été marquée comme vérifiée",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de vérifier l'identité",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteEmployeeMutation = useMutation({
     mutationFn: async (employeeId: string) => {
       await apiRequest("DELETE", `/api/employees/${employeeId}`, {});
@@ -897,9 +923,20 @@ export default function AdminDashboard() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base font-medium">
-                              {application.nom}
-                            </CardTitle>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <CardTitle className="text-base font-medium">
+                                {application.nom}
+                              </CardTitle>
+                              {application.identiteVerifiee && (
+                                <span 
+                                  className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md flex items-center gap-1"
+                                  data-testid={`identity-verified-badge-${application.id}`}
+                                >
+                                  <Check className="w-3 h-3" />
+                                  Identité vérifiée
+                                </span>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground mt-1">
                               {application.typePoste} - {application.experience}
                             </p>
@@ -1023,6 +1060,70 @@ export default function AdminDashboard() {
                               </div>
                             );
                           })()}
+
+                          {/* CNI Photos - Identity Verification */}
+                          {(application.carteIdentiteRectoUrl || application.carteIdentiteVersoUrl) && (
+                            <div className="flex items-start gap-2 mt-4 pt-4 border-t">
+                              <IdCard className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium mb-2">Photos de la carte d'identité:</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  {application.carteIdentiteRectoUrl && (
+                                    <div className="space-y-2">
+                                      <p className="text-xs font-medium text-muted-foreground">RECTO</p>
+                                      <div className="relative group">
+                                        <img 
+                                          src={application.carteIdentiteRectoUrl} 
+                                          alt="CNI Recto" 
+                                          className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(application.carteIdentiteRectoUrl!, '_blank');
+                                          }}
+                                          data-testid={`cni-recto-${application.id}`}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                  {application.carteIdentiteVersoUrl && (
+                                    <div className="space-y-2">
+                                      <p className="text-xs font-medium text-muted-foreground">VERSO</p>
+                                      <div className="relative group">
+                                        <img 
+                                          src={application.carteIdentiteVersoUrl} 
+                                          alt="CNI Verso" 
+                                          className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(application.carteIdentiteVersoUrl!, '_blank');
+                                          }}
+                                          data-testid={`cni-verso-${application.id}`}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Identity Verification Button */}
+                                {application.carteIdentiteRectoUrl && application.carteIdentiteVersoUrl && !application.identiteVerifiee && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-3 w-full sm:w-auto border-green-600 text-green-700 hover:bg-green-50"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      verifyNannyIdentityMutation.mutate(application.id);
+                                    }}
+                                    disabled={verifyNannyIdentityMutation.isPending}
+                                    data-testid={`button-verify-identity-${application.id}`}
+                                  >
+                                    <Check className="w-4 h-4 mr-2" />
+                                    {verifyNannyIdentityMutation.isPending ? "Vérification..." : "Marquer comme vérifiée"}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Accept/Reject Buttons (only show if status is "traite") */}

@@ -31,7 +31,12 @@ export default function NannyForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [cniRectoFile, setCniRectoFile] = useState<UploadedFile | null>(null);
+  const [cniVersoFile, setCniVersoFile] = useState<UploadedFile | null>(null);
+  const [isUploadingCNI, setIsUploadingCNI] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cniRectoInputRef = useRef<HTMLInputElement>(null);
+  const cniVersoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const { data: authData } = useQuery<any>({
@@ -70,11 +75,23 @@ export default function NannyForm() {
       setShowSuccess(true);
       form.reset();
       setUploadedFiles([]);
+      setCniRectoFile(null);
+      setCniVersoFile(null);
       setTimeout(() => setShowSuccess(false), 5000);
     },
   });
 
   const onSubmit = (data: any) => {
+    // Validate CNI files are present
+    if (!cniRectoFile || !cniVersoFile) {
+      toast({
+        title: "Documents manquants",
+        description: "Veuillez télécharger le recto ET le verso de votre carte d'identité",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const applicationData = {
       ...data,
       documents: JSON.stringify(uploadedFiles.map(f => ({
@@ -84,6 +101,8 @@ export default function NannyForm() {
         type: f.type,
         data: f.data // Include base64 data
       }))),
+      carteIdentiteRectoUrl: cniRectoFile.data || cniRectoFile.storedPath,
+      carteIdentiteVersoUrl: cniVersoFile.data || cniVersoFile.storedPath,
     };
     createApplicationMutation.mutate(applicationData);
   };
@@ -158,6 +177,97 @@ export default function NannyForm() {
 
   const removeFile = (index: number) => {
     setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
+  };
+
+  const handleCNIUpload = (type: 'recto' | 'verso') => {
+    if (type === 'recto') {
+      cniRectoInputRef.current?.click();
+    } else {
+      cniVersoInputRef.current?.click();
+    }
+  };
+
+  const handleCNIFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'recto' | 'verso') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Validate file type - only JPG and PNG
+    if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+      toast({
+        title: "Type de fichier invalide",
+        description: "Veuillez uploader uniquement des images JPG ou PNG",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Fichier trop volumineux",
+        description: `${file.name} dépasse la limite de 5MB`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploadingCNI(true);
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      
+      const uploadedFile: UploadedFile = {
+        filename: file.name,
+        storedPath: file.name,
+        size: file.size,
+        type: file.type,
+        data: base64data
+      };
+
+      if (type === 'recto') {
+        setCniRectoFile(uploadedFile);
+        toast({
+          title: "Photo uploadée",
+          description: "Recto de la carte d'identité uploadé avec succès",
+        });
+      } else {
+        setCniVersoFile(uploadedFile);
+        toast({
+          title: "Photo uploadée",
+          description: "Verso de la carte d'identité uploadé avec succès",
+        });
+      }
+
+      setIsUploadingCNI(false);
+      
+      // Reset input
+      if (e.target) {
+        e.target.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      toast({
+        title: "Erreur de lecture",
+        description: "Impossible de lire le fichier",
+        variant: "destructive"
+      });
+      setIsUploadingCNI(false);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const removeCNIFile = (type: 'recto' | 'verso') => {
+    if (type === 'recto') {
+      setCniRectoFile(null);
+    } else {
+      setCniVersoFile(null);
+    }
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -381,6 +491,135 @@ export default function NannyForm() {
                     </FormItem>
                   )}
                 />
+              </CardContent>
+            </Card>
+
+            {/* Identity Verification */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IdCard className="text-primary w-5 h-5" />
+                  Documents d'identité
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Informational message */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-900">
+                    📸 <strong>Pour garantir la sécurité des familles</strong>, veuillez télécharger une photo claire et lisible du <strong>RECTO</strong> et du <strong>VERSO</strong> de votre carte d'identité nationale (CNI).
+                  </p>
+                  <p className="text-xs text-blue-700 mt-2">
+                    Formats acceptés : JPG, PNG (max 5MB par photo)
+                  </p>
+                </div>
+
+                {/* Hidden file inputs */}
+                <input
+                  ref={cniRectoInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={(e) => handleCNIFileSelect(e, 'recto')}
+                  data-testid="file-input-cni-recto"
+                />
+                <input
+                  ref={cniVersoInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={(e) => handleCNIFileSelect(e, 'verso')}
+                  data-testid="file-input-cni-verso"
+                />
+
+                {/* CNI Recto Upload */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Carte d'identité - RECTO <span className="text-red-500">*</span>
+                  </label>
+                  {!cniRectoFile ? (
+                    <div 
+                      className="border-2 border-dashed border-border rounded-lg p-6 text-center transition-all duration-300 cursor-pointer hover:border-primary hover:bg-secondary"
+                      onClick={() => handleCNIUpload('recto')}
+                      data-testid="cni-recto-upload-area"
+                    >
+                      {isUploadingCNI ? (
+                        <>
+                          <Loader2 className="w-10 h-10 text-primary mb-2 mx-auto animate-spin" />
+                          <p className="text-sm font-medium">Upload en cours...</p>
+                        </>
+                      ) : (
+                        <>
+                          <FileUp className="w-10 h-10 text-muted-foreground mb-2 mx-auto" />
+                          <p className="text-sm font-medium mb-1">Cliquez pour uploader le RECTO</p>
+                          <p className="text-xs text-muted-foreground">JPG ou PNG, max 5MB</p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <Check className="w-8 h-8 text-green-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-900" data-testid="cni-recto-filename">{cniRectoFile.filename}</p>
+                        <p className="text-xs text-green-700">{formatFileSize(cniRectoFile.size)}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeCNIFile('recto')}
+                        className="text-destructive"
+                        data-testid="button-remove-cni-recto"
+                      >
+                        <i className="fas fa-times"></i>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* CNI Verso Upload */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Carte d'identité - VERSO <span className="text-red-500">*</span>
+                  </label>
+                  {!cniVersoFile ? (
+                    <div 
+                      className="border-2 border-dashed border-border rounded-lg p-6 text-center transition-all duration-300 cursor-pointer hover:border-primary hover:bg-secondary"
+                      onClick={() => handleCNIUpload('verso')}
+                      data-testid="cni-verso-upload-area"
+                    >
+                      {isUploadingCNI ? (
+                        <>
+                          <Loader2 className="w-10 h-10 text-primary mb-2 mx-auto animate-spin" />
+                          <p className="text-sm font-medium">Upload en cours...</p>
+                        </>
+                      ) : (
+                        <>
+                          <FileUp className="w-10 h-10 text-muted-foreground mb-2 mx-auto" />
+                          <p className="text-sm font-medium mb-1">Cliquez pour uploader le VERSO</p>
+                          <p className="text-xs text-muted-foreground">JPG ou PNG, max 5MB</p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <Check className="w-8 h-8 text-green-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-900" data-testid="cni-verso-filename">{cniVersoFile.filename}</p>
+                        <p className="text-xs text-green-700">{formatFileSize(cniVersoFile.size)}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeCNIFile('verso')}
+                        className="text-destructive"
+                        data-testid="button-remove-cni-verso"
+                      >
+                        <i className="fas fa-times"></i>
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

@@ -47,6 +47,9 @@ export const nannyApplications = pgTable("nanny_applications", {
   experience: text("experience").notNull(),
   disponibilites: text("disponibilites"),
   documents: text("documents"), // JSON array of document info
+  carteIdentiteRectoUrl: text("carte_identite_recto_url"), // Photo recto de la CNI
+  carteIdentiteVersoUrl: text("carte_identite_verso_url"), // Photo verso de la CNI
+  identiteVerifiee: boolean("identite_verifiee").default(false), // Badge admin vérification
   statut: text("statut").default("en_examen"),
   dateCreation: timestamp("date_creation").defaultNow(),
 });
@@ -113,6 +116,7 @@ export const insertNannyApplicationSchema = createInsertSchema(nannyApplications
   id: true,
   dateCreation: true,
   statut: true,
+  identiteVerifiee: true,
 }).extend({
   nom: z.string().min(1, "Le nom est obligatoire"),
   telephone: gabonPhoneSchema,
@@ -121,6 +125,8 @@ export const insertNannyApplicationSchema = createInsertSchema(nannyApplications
   experience: z.string().min(1, "L'expérience est obligatoire"),
   disponibilites: z.string().min(1, "Les disponibilités sont obligatoires"),
   documents: z.string().optional(),
+  carteIdentiteRectoUrl: z.string().optional(),
+  carteIdentiteVersoUrl: z.string().optional(),
 });
 
 export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({

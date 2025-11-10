@@ -730,6 +730,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/nanny-applications/:id/verify-identity", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get the application first to validate CNI images are present
+      const application = await storage.getNannyApplicationById(id);
+      
+      if (!application) {
+        return res.status(404).json({ message: "Candidature non trouvée" });
+      }
+      
+      // Validate that both CNI images are present
+      if (!application.carteIdentiteRectoUrl || !application.carteIdentiteVersoUrl) {
+        return res.status(400).json({ 
+          message: "Les deux photos de la carte d'identité (recto et verso) doivent être présentes pour vérifier l'identité" 
+        });
+      }
+      
+      const updatedApplication = await storage.verifyNannyIdentity(id);
+      res.json(updatedApplication);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.delete("/api/nanny-applications/:id", isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;

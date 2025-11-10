@@ -42,6 +42,7 @@ export interface IStorage {
   getNannyApplications(): Promise<NannyApplication[]>;
   getNannyApplicationById(id: string): Promise<NannyApplication | undefined>;
   updateNannyApplicationStatus(id: string, status: string): Promise<NannyApplication>;
+  verifyNannyIdentity(id: string): Promise<NannyApplication>;
   deleteNannyApplication(id: string): Promise<void>;
   
   // Contact messages
@@ -160,6 +161,9 @@ export class MemStorage implements IStorage {
       id,
       disponibilites: insertApplication.disponibilites ?? null,
       documents: insertApplication.documents ?? null,
+      carteIdentiteRectoUrl: insertApplication.carteIdentiteRectoUrl ?? null,
+      carteIdentiteVersoUrl: insertApplication.carteIdentiteVersoUrl ?? null,
+      identiteVerifiee: false,
       statut: "en_examen",
       dateCreation: new Date(),
     };
@@ -177,6 +181,16 @@ export class MemStorage implements IStorage {
       throw new Error(`Nanny application with id ${id} not found`);
     }
     const updatedApplication = { ...application, statut: status };
+    this.nannyApplications.set(id, updatedApplication);
+    return updatedApplication;
+  }
+
+  async verifyNannyIdentity(id: string): Promise<NannyApplication> {
+    const application = this.nannyApplications.get(id);
+    if (!application) {
+      throw new Error(`Nanny application with id ${id} not found`);
+    }
+    const updatedApplication = { ...application, identiteVerifiee: true };
     this.nannyApplications.set(id, updatedApplication);
     return updatedApplication;
   }
@@ -484,6 +498,20 @@ export class DbStorage implements IStorage {
     const [updatedApplication] = await db
       .update(nannyApplications)
       .set({ statut: status })
+      .where(eq(nannyApplications.id, id))
+      .returning();
+    
+    if (!updatedApplication) {
+      throw new Error(`Nanny application with id ${id} not found`);
+    }
+    
+    return updatedApplication;
+  }
+
+  async verifyNannyIdentity(id: string): Promise<NannyApplication> {
+    const [updatedApplication] = await db
+      .update(nannyApplications)
+      .set({ identiteVerifiee: true })
       .where(eq(nannyApplications.id, id))
       .returning();
     
