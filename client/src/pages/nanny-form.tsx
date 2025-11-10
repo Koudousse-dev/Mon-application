@@ -345,7 +345,7 @@ export default function NannyForm() {
       </div>
 
       {/* Form Content */}
-      <div className="p-4 sm:p-6 pb-32 w-full">
+      <div className="p-4 sm:p-6 pb-40 w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Personal Information */}

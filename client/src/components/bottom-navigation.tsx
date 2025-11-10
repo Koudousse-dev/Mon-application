@@ -25,7 +25,7 @@ export default function BottomNavigation() {
   const isAdminPage = location.startsWith('/admin');
 
   return (
-    <div className="floating-nav md:hidden">
+    <div className="floating-nav">
       <div className="flex justify-around items-center">
         {navigationItems.map(({ path, label, icon: Icon, testId }) => (
           <Link key={path} href={path}>
