@@ -700,7 +700,7 @@ export default function NannyForm() {
             {/* Submit Button */}
             <Button 
               type="submit" 
-              className="btn-primary w-full" 
+              className="btn-primary w-full mb-24" 
               disabled={createApplicationMutation.isPending}
               data-testid="button-submit"
             >

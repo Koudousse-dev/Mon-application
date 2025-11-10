@@ -383,7 +383,7 @@ export default function ParentForm() {
             {/* Submit Button */}
             <Button 
               type="submit" 
-              className="btn-primary w-full" 
+              className="btn-primary w-full mb-24" 
               disabled={createRequestMutation.isPending}
               data-testid="button-submit"
             >
