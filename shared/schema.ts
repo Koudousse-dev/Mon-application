@@ -223,6 +223,8 @@ export const employees = pgTable("employees", {
   experience: text("experience").notNull(),
   disponibilites: text("disponibilites"),
   documents: text("documents"), // JSON array of document info
+  carteIdentiteRectoUrl: text("carte_identite_recto_url"), // Photo recto de la CNI
+  carteIdentiteVersoUrl: text("carte_identite_verso_url"), // Photo verso de la CNI
   actif: boolean("actif").default(true),
   dateEmbauche: timestamp("date_embauche").defaultNow(),
 });
@@ -312,6 +314,8 @@ export const insertEmployeeSchema = createInsertSchema(employees).omit({
   experience: z.string().min(1, "L'expérience est obligatoire"),
   disponibilites: z.string().nullish(),
   documents: z.string().nullish(),
+  carteIdentiteRectoUrl: z.string().nullish(),
+  carteIdentiteVersoUrl: z.string().nullish(),
 });
 
 export const insertPaiementEmployeSchema = createInsertSchema(paiementsEmployes).omit({

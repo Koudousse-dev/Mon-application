@@ -1088,6 +1088,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         experience: candidature.experience,
         disponibilites: candidature.disponibilites,
         documents: candidature.documents,
+        carteIdentiteRectoUrl: candidature.carteIdentiteRectoUrl,
+        carteIdentiteVersoUrl: candidature.carteIdentiteVersoUrl,
         actif: true,
         dateEmbauche: new Date()
       });

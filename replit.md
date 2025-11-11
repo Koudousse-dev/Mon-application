@@ -19,7 +19,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage Solutions
 **Database:** PostgreSQL (Neon serverless) managed with Drizzle ORM for type-safe operations and Drizzle Kit for migrations.
-**Schema Design:** Includes `parent_requests`, `nanny_applications`, `contact_messages`, `notifications`, `payments`, `payment_configs`, `prestations`, `parametres_site`, `employees`, `paiements_employes`, `push_subscriptions`, and `banner_images`.
+**Schema Design:** Includes `parent_requests`, `nanny_applications` (with CNI photo fields), `contact_messages`, `notifications`, `payments`, `payment_configs`, `prestations`, `parametres_site`, `employees` (with CNI photo fields transferred from accepted applications), `paiements_employes`, `push_subscriptions`, `clients`, and `banner_images`.
 **Storage Implementation:** `DbStorage` for production (PostgreSQL) and `MemStorage` for development/testing. IndexedDB for client-side offline persistence.
 **Automatic Migrations:** Production deployments run custom migration script (`server/migrate.ts`) using Neon HTTP driver before server startup to automatically sync database schema. The script handles table creation and schema updates (e.g., making `prestations.description` nullable) with conditional checks to ensure idempotent operations.
 
@@ -29,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 **Protected Routes:** Admin dashboard and management endpoints require authentication; public API endpoints are open.
 
 ### System Features
-**Admin Dashboard:** Statistics cards, tabbed interface with collapsible detail cards, real-time status management for requests and applications, CRUD for services and site parameters, employee management (including nanny application acceptance and payment creation), payment provider configuration, admin profile editing, and push notification management toggle.
+**Admin Dashboard:** Statistics cards, tabbed interface with collapsible detail cards, real-time status management for requests and applications, CRUD for services and site parameters, employee management (including nanny application acceptance with automatic CNI photo transfer and payment creation), client management (accept/reject/delete with proper status workflow), payment provider configuration, admin profile editing, and push notification management toggle.
 **Notification System:** 
 - **In-app notifications**: Badge counter and popover list in admin dashboard for new requests, applications, messages, and matches.
 - **Push notifications**: Web Push API integration allowing admins to receive real-time notifications on their devices (phone/desktop) for new parent requests, nanny applications, and contact messages. Features include:
