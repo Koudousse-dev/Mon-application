@@ -1,0 +1,107 @@
+🔄 Starting database migrations...
+🔄 Making prestations.description nullable...
+⚠️  Could not modify prestations.description (insufficient permissions)
+   This is expected in production - existing prestations already have descriptions
+🔄 Checking parent_requests table columns...
+🔄 Adding email column to parent_requests...
+❌ Error updating parent_requests table: NeonDbError: must be owner of table parent_requests
+    at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runMigrations (file:///opt/render/project/src/dist/migrate.js:68:9) {
+  severity: 'ERROR',
+  code: '42501',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'aclchk.c',
+  line: '2950',
+  routine: 'aclcheck_error',
+  sourceError: undefined
+}
+❌ Migration failed: NeonDbError: must be owner of table parent_requests
+    at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runMigrations (file:///opt/render/project/src/dist/migrate.js:68:9) {
+  severity: 'ERROR',
+  code: '42501',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'aclchk.c',
+  line: '2950',
+  routine: 'aclcheck_error',
+  sourceError: undefined
+}
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'npm run start'
+> rest-express@1.0.0 start
+> npm run db:migrate && NODE_ENV=production node dist/index.js
+> rest-express@1.0.0 db:migrate
+> node dist/migrate.js
+🔄 Starting database migrations...
+🔄 Making prestations.description nullable...
+⚠️  Could not modify prestations.description (insufficient permissions)
+   This is expected in production - existing prestations already have descriptions
+🔄 Checking parent_requests table columns...
+🔄 Adding email column to parent_requests...
+❌ Error updating parent_requests table: NeonDbError: must be owner of table parent_requests
+    at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runMigrations (file:///opt/render/project/src/dist/migrate.js:68:9) {
+  severity: 'ERROR',
+  code: '42501',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'aclchk.c',
+  line: '2950',
+  routine: 'aclcheck_error',
+  sourceError: undefined
+}
+❌ Migration failed: NeonDbError: must be owner of table parent_requests
+    at dr.execute (file:///opt/render/project/src/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runMigrations (file:///opt/render/project/src/dist/migrate.js:68:9) {
+  severity: 'ERROR',
+  code: '42501',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'aclchk.c',
+  line: '2950',
+  routine: 'aclcheck_error',
+  sourceError: undefined
+}
