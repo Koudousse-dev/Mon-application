@@ -105,14 +105,44 @@ async function runMigrations() {
       
       console.log("✅ parent_requests table updated");
     } catch (error: any) {
-      console.error("❌ Error updating parent_requests table:", error);
-      throw error;
+      if (error.code === '42501') {
+        console.log("⚠️  Could not modify parent_requests table (insufficient permissions)");
+        console.log("   Please add columns manually via Neon Console");
+      } else {
+        console.error("❌ Error updating parent_requests table:", error);
+        throw error;
+      }
     }
     
-    // Add new columns to clients table
+    // Create clients table if it doesn't exist, or add columns if it does
     try {
-      console.log("🔄 Checking clients table columns...");
+      console.log("🔄 Checking clients table...");
       
+      // Try to create the table first (will skip if exists)
+      await sql`
+        CREATE TABLE IF NOT EXISTS "clients" (
+          "id" varchar PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+          "demande_id" varchar NOT NULL UNIQUE,
+          "nom" text NOT NULL,
+          "email" text,
+          "telephone" text NOT NULL,
+          "adresse" text NOT NULL,
+          "ville" text,
+          "quartier" text,
+          "nombre_enfants" integer NOT NULL,
+          "ages_enfants" text,
+          "type_service" text NOT NULL,
+          "horaire_debut" text,
+          "horaire_fin" text,
+          "forfait" text NOT NULL,
+          "commentaires" text,
+          "actif" boolean DEFAULT true,
+          "date_inscription" timestamp DEFAULT now()
+        );
+      `;
+      console.log("✅ clients table ready");
+      
+      // Then try to add missing columns (if table existed but was incomplete)
       const clientsColumns = await sql`
         SELECT column_name 
         FROM information_schema.columns 
@@ -145,10 +175,15 @@ async function runMigrations() {
         console.log("✅ Added ages_enfants column");
       }
       
-      console.log("✅ clients table updated");
+      console.log("✅ clients table fully updated");
     } catch (error: any) {
-      console.error("❌ Error updating clients table:", error);
-      throw error;
+      if (error.code === '42501') {
+        console.log("⚠️  Could not modify clients table (insufficient permissions)");
+        console.log("   Please create/modify table manually via Neon Console");
+      } else {
+        console.error("❌ Error with clients table:", error);
+        throw error;
+      }
     }
     
     console.log("✅ Migrations completed successfully");
