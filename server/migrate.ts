@@ -186,11 +186,47 @@ async function runMigrations() {
       }
     }
     
+    // Add CNI columns to nanny_applications table
+    try {
+      console.log("🔄 Checking nanny_applications table columns...");
+      
+      const nannyColumns = await sql`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'nanny_applications';
+      `;
+      
+      const existingColumns = new Set(nannyColumns.map((row: any) => row.column_name));
+      
+      if (!existingColumns.has('carte_identite_recto_url')) {
+        console.log("🔄 Adding carte_identite_recto_url column to nanny_applications...");
+        await sql`ALTER TABLE nanny_applications ADD COLUMN carte_identite_recto_url text;`;
+        console.log("✅ Added carte_identite_recto_url column");
+      }
+      
+      if (!existingColumns.has('carte_identite_verso_url')) {
+        console.log("🔄 Adding carte_identite_verso_url column to nanny_applications...");
+        await sql`ALTER TABLE nanny_applications ADD COLUMN carte_identite_verso_url text;`;
+        console.log("✅ Added carte_identite_verso_url column");
+      }
+      
+      console.log("✅ nanny_applications table updated");
+    } catch (error: any) {
+      if (error.code === '42501') {
+        console.log("⚠️  Could not modify nanny_applications table (insufficient permissions)");
+        console.log("   Please add CNI columns manually via Neon Console");
+      } else {
+        console.error("❌ Error updating nanny_applications table:", error);
+        throw error;
+      }
+    }
+    
     console.log("✅ Migrations completed successfully");
     console.log("   - banner_images table ready");
     console.log("   - push_subscriptions table ready");
     console.log("   - parent_requests table updated with new columns");
     console.log("   - clients table updated with new columns");
+    console.log("   - nanny_applications table updated with CNI columns");
     process.exit(0);
   } catch (error) {
     console.error("❌ Migration failed:", error);

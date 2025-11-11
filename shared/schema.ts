@@ -106,18 +106,18 @@ export const insertParentRequestSchema = createInsertSchema(parentRequests).omit
   statut: true,
 }).extend({
   nom: z.string().min(1, "Le nom est obligatoire"),
-  email: z.string().email("Email invalide").optional(),
+  email: z.string().email("Email invalide").nullish(),
   telephone: gabonPhoneSchema,
   adresse: z.string().min(1, "L'adresse est obligatoire"),
-  ville: z.string().optional(),
-  quartier: z.string().optional(),
+  ville: z.string().nullish(),
+  quartier: z.string().nullish(),
   typeService: z.string().min(1, "Le type de service est obligatoire"),
   horaireDebut: z.string().min(1, "L'horaire de début est obligatoire"),
   horaireFin: z.string().min(1, "L'horaire de fin est obligatoire"),
   nombreEnfants: z.number().min(1, "Le nombre d'enfants doit être au moins 1"),
-  agesEnfants: z.string().optional(),
+  agesEnfants: z.string().nullish(),
   forfait: z.string().min(1, "Le forfait est obligatoire"),
-  commentaires: z.string().optional(),
+  commentaires: z.string().nullish(),
 });
 
 export const insertNannyApplicationSchema = createInsertSchema(nannyApplications).omit({
@@ -132,9 +132,9 @@ export const insertNannyApplicationSchema = createInsertSchema(nannyApplications
   typePoste: z.string().min(1, "Le type de poste est obligatoire"),
   experience: z.string().min(1, "L'expérience est obligatoire"),
   disponibilites: z.string().min(1, "Les disponibilités sont obligatoires"),
-  documents: z.string().optional(),
-  carteIdentiteRectoUrl: z.string().optional(),
-  carteIdentiteVersoUrl: z.string().optional(),
+  documents: z.string().nullish(),
+  carteIdentiteRectoUrl: z.string().nullish(),
+  carteIdentiteVersoUrl: z.string().nullish(),
 });
 
 export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({
@@ -412,18 +412,18 @@ export const insertClientSchema = createInsertSchema(clients).omit({
 }).extend({
   demandeId: z.string().min(1, "L'ID de la demande est obligatoire"),
   nom: z.string().min(1, "Le nom est obligatoire"),
-  email: z.string().email("Email invalide").optional(),
+  email: z.string().email("Email invalide").nullish(),
   telephone: gabonPhoneSchema,
   adresse: z.string().min(1, "L'adresse est obligatoire"),
-  ville: z.string().optional(),
-  quartier: z.string().optional(),
+  ville: z.string().nullish(),
+  quartier: z.string().nullish(),
   nombreEnfants: z.number().min(1, "Le nombre d'enfants doit être au moins 1"),
-  agesEnfants: z.string().optional(),
+  agesEnfants: z.string().nullish(),
   typeService: z.string().min(1, "Le type de service est obligatoire"),
-  horaireDebut: z.string().optional(),
-  horaireFin: z.string().optional(),
+  horaireDebut: z.string().nullish(),
+  horaireFin: z.string().nullish(),
   forfait: z.string().min(1, "Le forfait est obligatoire"),
-  commentaires: z.string().optional(),
+  commentaires: z.string().nullish(),
 });
 
 // Types pour les clients
