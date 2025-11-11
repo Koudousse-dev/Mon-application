@@ -67,9 +67,95 @@ async function runMigrations() {
       }
     }
     
+    // Add new columns to parent_requests table
+    try {
+      console.log("🔄 Checking parent_requests table columns...");
+      
+      const parentRequestsColumns = await sql`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'parent_requests';
+      `;
+      
+      const existingColumns = new Set(parentRequestsColumns.map((row: any) => row.column_name));
+      
+      if (!existingColumns.has('email')) {
+        console.log("🔄 Adding email column to parent_requests...");
+        await sql`ALTER TABLE parent_requests ADD COLUMN email text;`;
+        console.log("✅ Added email column");
+      }
+      
+      if (!existingColumns.has('ville')) {
+        console.log("🔄 Adding ville column to parent_requests...");
+        await sql`ALTER TABLE parent_requests ADD COLUMN ville text;`;
+        console.log("✅ Added ville column");
+      }
+      
+      if (!existingColumns.has('quartier')) {
+        console.log("🔄 Adding quartier column to parent_requests...");
+        await sql`ALTER TABLE parent_requests ADD COLUMN quartier text;`;
+        console.log("✅ Added quartier column");
+      }
+      
+      if (!existingColumns.has('ages_enfants')) {
+        console.log("🔄 Adding ages_enfants column to parent_requests...");
+        await sql`ALTER TABLE parent_requests ADD COLUMN ages_enfants text;`;
+        console.log("✅ Added ages_enfants column");
+      }
+      
+      console.log("✅ parent_requests table updated");
+    } catch (error: any) {
+      console.error("❌ Error updating parent_requests table:", error);
+      throw error;
+    }
+    
+    // Add new columns to clients table
+    try {
+      console.log("🔄 Checking clients table columns...");
+      
+      const clientsColumns = await sql`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'clients';
+      `;
+      
+      const existingColumns = new Set(clientsColumns.map((row: any) => row.column_name));
+      
+      if (!existingColumns.has('email')) {
+        console.log("🔄 Adding email column to clients...");
+        await sql`ALTER TABLE clients ADD COLUMN email text;`;
+        console.log("✅ Added email column");
+      }
+      
+      if (!existingColumns.has('ville')) {
+        console.log("🔄 Adding ville column to clients...");
+        await sql`ALTER TABLE clients ADD COLUMN ville text;`;
+        console.log("✅ Added ville column");
+      }
+      
+      if (!existingColumns.has('quartier')) {
+        console.log("🔄 Adding quartier column to clients...");
+        await sql`ALTER TABLE clients ADD COLUMN quartier text;`;
+        console.log("✅ Added quartier column");
+      }
+      
+      if (!existingColumns.has('ages_enfants')) {
+        console.log("🔄 Adding ages_enfants column to clients...");
+        await sql`ALTER TABLE clients ADD COLUMN ages_enfants text;`;
+        console.log("✅ Added ages_enfants column");
+      }
+      
+      console.log("✅ clients table updated");
+    } catch (error: any) {
+      console.error("❌ Error updating clients table:", error);
+      throw error;
+    }
+    
     console.log("✅ Migrations completed successfully");
     console.log("   - banner_images table ready");
     console.log("   - push_subscriptions table ready");
+    console.log("   - parent_requests table updated with new columns");
+    console.log("   - clients table updated with new columns");
     process.exit(0);
   } catch (error) {
     console.error("❌ Migration failed:", error);
