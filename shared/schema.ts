@@ -17,7 +17,7 @@ export const gabonPhoneSchema = z.string()
     message: "Le numéro doit être un numéro gabonais valide (format: +241 XX XX XX XX, 8 chiffres après +241)"
   });
 
-export const parentRequestStatuses = ["en_attente", "traite", "paye"] as const;
+export const parentRequestStatuses = ["en_attente", "traite", "paye", "refuse"] as const;
 export const nannyApplicationStatuses = ["en_examen", "en_attente", "traite", "accepte", "refuse"] as const;
 
 export type ParentRequestStatus = typeof parentRequestStatuses[number];
@@ -26,12 +26,16 @@ export type NannyApplicationStatus = typeof nannyApplicationStatuses[number];
 export const parentRequests = pgTable("parent_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   nom: text("nom").notNull(),
+  email: text("email"),
   telephone: text("telephone").notNull(),
   adresse: text("adresse").notNull(),
+  ville: text("ville"),
+  quartier: text("quartier"),
   typeService: text("type_service").notNull(),
   horaireDebut: text("horaire_debut"),
   horaireFin: text("horaire_fin"),
   nombreEnfants: integer("nombre_enfants").notNull(),
+  agesEnfants: text("ages_enfants"),
   forfait: text("forfait").notNull(),
   commentaires: text("commentaires"),
   statut: text("statut").default("en_attente"),
@@ -102,12 +106,16 @@ export const insertParentRequestSchema = createInsertSchema(parentRequests).omit
   statut: true,
 }).extend({
   nom: z.string().min(1, "Le nom est obligatoire"),
+  email: z.string().email("Email invalide").optional(),
   telephone: gabonPhoneSchema,
   adresse: z.string().min(1, "L'adresse est obligatoire"),
+  ville: z.string().optional(),
+  quartier: z.string().optional(),
   typeService: z.string().min(1, "Le type de service est obligatoire"),
   horaireDebut: z.string().min(1, "L'horaire de début est obligatoire"),
   horaireFin: z.string().min(1, "L'horaire de fin est obligatoire"),
   nombreEnfants: z.number().min(1, "Le nombre d'enfants doit être au moins 1"),
+  agesEnfants: z.string().optional(),
   forfait: z.string().min(1, "Le forfait est obligatoire"),
   commentaires: z.string().optional(),
 });
