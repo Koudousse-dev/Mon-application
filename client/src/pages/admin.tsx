@@ -621,13 +621,33 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/parent-requests"] });
       toast({
         title: "Demande refusée",
-        description: "La demande a été supprimée",
+        description: "Le statut a été changé à Refusé",
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Erreur",
         description: error.message || "Impossible de refuser la demande",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteParentRequestMutation = useMutation({
+    mutationFn: async (requestId: string) => {
+      await apiRequest("DELETE", `/api/parent-requests/${requestId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/parent-requests"] });
+      toast({
+        title: "Demande supprimée",
+        description: "La demande a été supprimée définitivement",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer la demande",
         variant: "destructive",
       });
     },
@@ -929,6 +949,7 @@ export default function AdminDashboard() {
                                 <SelectItem value="en_attente">En attente</SelectItem>
                                 <SelectItem value="traite">Traité</SelectItem>
                                 <SelectItem value="paye">Payé</SelectItem>
+                                <SelectItem value="refuse">Refusé</SelectItem>
                               </SelectContent>
                             </Select>
                             {expandedRequests.has(request.id) ? (
@@ -978,33 +999,53 @@ export default function AdminDashboard() {
                           )}
                         </div>
                         <div className="flex gap-2 mt-4 pt-3 border-t">
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              acceptParentRequestMutation.mutate(request.id);
-                            }}
-                            disabled={acceptParentRequestMutation.isPending}
-                            className="flex-1"
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            Accepter
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm("Voulez-vous vraiment refuser cette demande ? Elle sera supprimée.")) {
-                                rejectParentRequestMutation.mutate(request.id);
-                              }
-                            }}
-                            disabled={rejectParentRequestMutation.isPending}
-                            className="flex-1"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Refuser
-                          </Button>
+                          {request.statut !== "refuse" ? (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  acceptParentRequestMutation.mutate(request.id);
+                                }}
+                                disabled={acceptParentRequestMutation.isPending}
+                                className="flex-1"
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Accepter
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm("Voulez-vous vraiment refuser cette demande ? Son statut sera changé à Refusé.")) {
+                                    rejectParentRequestMutation.mutate(request.id);
+                                  }
+                                }}
+                                disabled={rejectParentRequestMutation.isPending}
+                                className="flex-1"
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Refuser
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm("Voulez-vous vraiment supprimer définitivement cette demande ?")) {
+                                  deleteParentRequestMutation.mutate(request.id);
+                                }
+                              }}
+                              disabled={deleteParentRequestMutation.isPending}
+                              className="w-full"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Supprimer
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </CollapsibleContent>
