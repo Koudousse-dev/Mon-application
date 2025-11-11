@@ -219,6 +219,23 @@ export const employees = pgTable("employees", {
   dateEmbauche: timestamp("date_embauche").defaultNow(),
 });
 
+// Table des clients (créés depuis demandes de parents acceptées)
+export const clients = pgTable("clients", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  demandeId: varchar("demande_id").notNull().unique(), // Lien vers parent_requests (un seul client par demande)
+  nom: text("nom").notNull(),
+  telephone: text("telephone").notNull(),
+  adresse: text("adresse").notNull(),
+  nombreEnfants: integer("nombre_enfants").notNull(),
+  typeService: text("type_service").notNull(),
+  horaireDebut: text("horaire_debut"),
+  horaireFin: text("horaire_fin"),
+  forfait: text("forfait").notNull(),
+  commentaires: text("commentaires"),
+  actif: boolean("actif").default(true),
+  dateInscription: timestamp("date_inscription").defaultNow(),
+});
+
 // Table des paiements aux employés
 export const paiementsEmployes = pgTable("paiements_employes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -374,3 +391,25 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
 
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
+// Schéma de validation pour les clients
+export const insertClientSchema = createInsertSchema(clients).omit({
+  id: true,
+  dateInscription: true,
+  actif: true,
+}).extend({
+  demandeId: z.string().min(1, "L'ID de la demande est obligatoire"),
+  nom: z.string().min(1, "Le nom est obligatoire"),
+  telephone: gabonPhoneSchema,
+  adresse: z.string().min(1, "L'adresse est obligatoire"),
+  nombreEnfants: z.number().min(1, "Le nombre d'enfants doit être au moins 1"),
+  typeService: z.string().min(1, "Le type de service est obligatoire"),
+  horaireDebut: z.string().optional(),
+  horaireFin: z.string().optional(),
+  forfait: z.string().min(1, "Le forfait est obligatoire"),
+  commentaires: z.string().optional(),
+});
+
+// Types pour les clients
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Client = typeof clients.$inferSelect;

@@ -33,6 +33,7 @@ import {
   insertPrestationSchema,
   insertParametreSiteSchema,
   insertEmployeeSchema,
+  insertClientSchema,
   insertPaiementEmployeSchema,
   updateAdminProfileSchema,
   updatePaymentConfigSchema,
@@ -657,8 +658,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Nanny application routes
   app.post("/api/nanny-applications", async (req, res) => {
     try {
+      console.log("[NANNY APP] Received application submission");
       const data = insertNannyApplicationSchema.parse(req.body);
+      console.log("[NANNY APP] Validation passed, creating application in database");
       const application = await storage.createNannyApplication(data);
+      console.log("[NANNY APP] Application created with ID:", application.id);
       
       // Create notification for new nanny application
       await storage.createNotification({
@@ -693,12 +697,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      console.log("[NANNY APP] Success! Application fully processed");
       res.json(application);
     } catch (error) {
+      console.error("[NANNY APP ERROR]", error);
       if (error instanceof z.ZodError) {
+        console.error("[NANNY APP] Validation errors:", JSON.stringify(error.errors, null, 2));
         res.status(400).json({ message: "Invalid data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        console.error("[NANNY APP] Database or server error:", error instanceof Error ? error.message : String(error));
+        res.status(500).json({ 
+          message: "Internal server error",
+          error: error instanceof Error ? error.message : "Unknown error"
+        });
       }
     }
   });
@@ -1133,6 +1144,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteEmployee(id);
       res.json({ message: "Employé supprimé avec succès" });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
+  // Client routes (parents acceptés)
+  app.post("/api/parent-requests/:id/accept", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Récupérer la demande
+      const demande = await storage.getParentRequests().then(requests => 
+        requests.find(r => r.id === id)
+      );
+      
+      if (!demande) {
+        return res.status(404).json({ message: "Demande non trouvée" });
+      }
+
+      // Vérifier qu'un client n'existe pas déjà pour cette demande
+      const existingClient = await storage.getClients().then(clients =>
+        clients.find(c => c.demandeId === demande.id)
+      );
+      
+      if (existingClient) {
+        return res.status(409).json({ 
+          message: "Cette demande a déjà été acceptée",
+          clientId: existingClient.id 
+        });
+      }
+
+      // Créer le client à partir de la demande
+      const clientData = insertClientSchema.parse({
+        demandeId: demande.id,
+        nom: demande.nom,
+        telephone: demande.telephone,
+        adresse: demande.adresse,
+        nombreEnfants: demande.nombreEnfants,
+        typeService: demande.typeService,
+        horaireDebut: demande.horaireDebut,
+        horaireFin: demande.horaireFin,
+        forfait: demande.forfait,
+        commentaires: demande.commentaires,
+        actif: true,
+        dateInscription: new Date()
+      });
+
+      const client = await storage.createClient(clientData);
+      
+      // Supprimer la demande maintenant qu'elle est acceptée (évite les doublons dans la liste)
+      await storage.deleteParentRequest(id);
+      
+      // Créer une notification
+      await storage.createNotification({
+        type: "nouvelle_demande",
+        titre: "Demande acceptée",
+        message: `La demande de ${client.nom} a été acceptée et ajoutée aux clients`,
+        relatedId: client.id
+      });
+      
+      res.json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Données invalides", errors: error.errors });
+      } else {
+        console.error("Erreur acceptation demande:", error);
+        res.status(500).json({ message: "Erreur serveur" });
+      }
+    }
+  });
+
+  app.post("/api/parent-requests/:id/reject", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Supprimer la demande refusée
+      await storage.deleteParentRequest(id);
+      
+      res.json({ message: "Demande refusée et supprimée" });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ message: error.message });
+      }
+      console.error("Erreur refus demande:", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
+  app.get("/api/clients", isAuthenticated, async (req, res) => {
+    try {
+      const clients = await storage.getClients();
+      res.json(clients);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
+  app.get("/api/clients/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const client = await storage.getClientById(id);
+      if (!client) {
+        return res.status(404).json({ message: "Client non trouvé" });
+      }
+      res.json(client);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
+  app.delete("/api/clients/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteClient(id);
+      res.json({ message: "Client supprimé avec succès" });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
+  app.delete("/api/parent-requests/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await storage.deleteParentRequest(id);
+      
+      res.json({ message: "Demande supprimée avec succès" });
     } catch (error) {
       if (error instanceof Error && error.message.includes("not found")) {
         return res.status(404).json({ message: error.message });

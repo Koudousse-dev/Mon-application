@@ -36,14 +36,15 @@ declare module 'http' {
   }
 }
 // Increase JSON body limit to handle multiple base64 file uploads
-// 5MB file = ~7MB base64, allow up to 3-4 files max = ~30MB
+// Large CNI photos can be 2-5MB each, base64 increases size by ~33%
+// Total: 2 CNI photos + optional docs = allow up to 100MB to be safe
 app.use(express.json({
-  limit: '30mb', // Allow up to 30MB JSON payloads for multiple file uploads
+  limit: '100mb', // Allow up to 100MB JSON payloads for CNI photos and documents
   verify: (req, _res, buf) => {
     req.rawBody = buf;
   }
 }));
-app.use(express.urlencoded({ extended: false, limit: '30mb' }));
+app.use(express.urlencoded({ extended: false, limit: '100mb' }));
 
 // Verify SESSION_SECRET is set in production
 if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {

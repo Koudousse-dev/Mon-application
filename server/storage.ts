@@ -1,4 +1,4 @@
-import { type ParentRequest, type InsertParentRequest, type NannyApplication, type InsertNannyApplication, type ContactMessage, type InsertContactMessage, type Notification, type InsertNotification, type Prestation, type InsertPrestation, type ParametreSite, type InsertParametreSite, type Employee, type InsertEmployee, type PaiementEmploye, type InsertPaiementEmploye, type PaymentConfig, type InsertPaymentConfig, type UpdatePaymentConfig, type BannerImage, type InsertBannerImage, type UpdateBannerImage, type PushSubscription, type InsertPushSubscription, parentRequests, nannyApplications, contactMessages, notifications, adminUsers, prestations, parametresSite, employees, paiementsEmployes, paymentConfigs, bannerImages, pushSubscriptions } from "@shared/schema";
+import { type ParentRequest, type InsertParentRequest, type NannyApplication, type InsertNannyApplication, type ContactMessage, type InsertContactMessage, type Notification, type InsertNotification, type Prestation, type InsertPrestation, type ParametreSite, type InsertParametreSite, type Employee, type InsertEmployee, type Client, type InsertClient, type PaiementEmploye, type InsertPaiementEmploye, type PaymentConfig, type InsertPaymentConfig, type UpdatePaymentConfig, type BannerImage, type InsertBannerImage, type UpdateBannerImage, type PushSubscription, type InsertPushSubscription, parentRequests, nannyApplications, contactMessages, notifications, adminUsers, prestations, parametresSite, employees, clients, paiementsEmployes, paymentConfigs, bannerImages, pushSubscriptions } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
@@ -36,6 +36,7 @@ export interface IStorage {
   createParentRequest(request: InsertParentRequest): Promise<ParentRequest>;
   getParentRequests(): Promise<ParentRequest[]>;
   updateParentRequestStatus(id: string, status: string): Promise<ParentRequest>;
+  deleteParentRequest(id: string): Promise<void>;
   
   // Nanny applications
   createNannyApplication(application: InsertNannyApplication): Promise<NannyApplication>;
@@ -83,6 +84,12 @@ export interface IStorage {
   updateEmployee(id: string, employee: Partial<InsertEmployee>): Promise<Employee>;
   deleteEmployee(id: string): Promise<void>;
   
+  // Clients
+  createClient(client: InsertClient): Promise<Client>;
+  getClients(): Promise<Client[]>;
+  getClientById(id: string): Promise<Client | undefined>;
+  deleteClient(id: string): Promise<void>;
+  
   // Paiements employés
   createPaiementEmploye(paiement: InsertPaiementEmploye): Promise<PaiementEmploye>;
   getPaiementsEmploye(employeId: string): Promise<PaiementEmploye[]>;
@@ -112,6 +119,7 @@ export class MemStorage implements IStorage {
   private prestations: Map<string, Prestation>;
   private parametresSite: Map<string, ParametreSite>;
   private employees: Map<string, Employee>;
+  private clients: Map<string, Client>;
   private paiementsEmployes: Map<string, PaiementEmploye>;
 
   constructor() {
@@ -122,6 +130,7 @@ export class MemStorage implements IStorage {
     this.prestations = new Map();
     this.parametresSite = new Map();
     this.employees = new Map();
+    this.clients = new Map();
     this.paiementsEmployes = new Map();
   }
 
@@ -152,6 +161,14 @@ export class MemStorage implements IStorage {
     const updatedRequest = { ...request, statut: status };
     this.parentRequests.set(id, updatedRequest);
     return updatedRequest;
+  }
+
+  async deleteParentRequest(id: string): Promise<void> {
+    const request = this.parentRequests.get(id);
+    if (!request) {
+      throw new Error(`Parent request with id ${id} not found`);
+    }
+    this.parentRequests.delete(id);
   }
 
   async createNannyApplication(insertApplication: InsertNannyApplication): Promise<NannyApplication> {
@@ -404,6 +421,37 @@ export class MemStorage implements IStorage {
     this.employees.delete(id);
   }
 
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const id = randomUUID();
+    const client: Client = {
+      ...insertClient,
+      id,
+      horaireDebut: insertClient.horaireDebut ?? null,
+      horaireFin: insertClient.horaireFin ?? null,
+      commentaires: insertClient.commentaires ?? null,
+      actif: true,
+      dateInscription: new Date(),
+    };
+    this.clients.set(id, client);
+    return client;
+  }
+
+  async getClients(): Promise<Client[]> {
+    return Array.from(this.clients.values());
+  }
+
+  async getClientById(id: string): Promise<Client | undefined> {
+    return this.clients.get(id);
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    const client = this.clients.get(id);
+    if (!client) {
+      throw new Error(`Client with id ${id} not found`);
+    }
+    this.clients.delete(id);
+  }
+
   async createPaiementEmploye(insertPaiement: InsertPaiementEmploye): Promise<PaiementEmploye> {
     const id = randomUUID();
     const paiement: PaiementEmploye = {
@@ -483,6 +531,17 @@ export class DbStorage implements IStorage {
     }
     
     return updatedRequest;
+  }
+
+  async deleteParentRequest(id: string): Promise<void> {
+    const result = await db
+      .delete(parentRequests)
+      .where(eq(parentRequests.id, id))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error(`Parent request with id ${id} not found`);
+    }
   }
 
   async createNannyApplication(insertApplication: InsertNannyApplication): Promise<NannyApplication> {
@@ -728,6 +787,31 @@ export class DbStorage implements IStorage {
     const result = await db.delete(employees).where(eq(employees.id, id)).returning();
     if (result.length === 0) {
       throw new Error(`Employee with id ${id} not found`);
+    }
+  }
+
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const [client] = await db.insert(clients).values(insertClient).returning();
+    return client;
+  }
+
+  async getClients(): Promise<Client[]> {
+    return await db.select().from(clients);
+  }
+
+  async getClientById(id: string): Promise<Client | undefined> {
+    const [client] = await db
+      .select()
+      .from(clients)
+      .where(eq(clients.id, id))
+      .limit(1);
+    return client;
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    const result = await db.delete(clients).where(eq(clients.id, id)).returning();
+    if (result.length === 0) {
+      throw new Error(`Client with id ${id} not found`);
     }
   }
 

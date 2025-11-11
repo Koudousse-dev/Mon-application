@@ -62,13 +62,8 @@ export default function NannyForm() {
 
   const createApplicationMutation = useMutation({
     mutationFn: async (data: any) => {
-      try {
-        const response = await apiRequest("POST", "/api/nanny-applications", data);
-        return await response.json();
-      } catch (error) {
-        await localStorage.storeNannyApplication(data);
-        return { offline: true };
-      }
+      const response = await apiRequest("POST", "/api/nanny-applications", data);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/nanny-applications"] });
@@ -78,6 +73,14 @@ export default function NannyForm() {
       setCniRectoFile(null);
       setCniVersoFile(null);
       setTimeout(() => setShowSuccess(false), 5000);
+    },
+    onError: (error: any) => {
+      console.error("Erreur soumission candidature:", error);
+      toast({
+        title: "Erreur lors de l'envoi",
+        description: error?.message || "Une erreur s'est produite. Veuillez réessayer.",
+        variant: "destructive"
+      });
     },
   });
 
@@ -121,11 +124,11 @@ export default function NannyForm() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       
-      // Check file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
+      // Check file size (15MB max)
+      if (file.size > 15 * 1024 * 1024) {
         toast({
           title: "Fichier trop volumineux",
-          description: `${file.name} dépasse la limite de 5MB`,
+          description: `${file.name} dépasse la limite de 15MB`,
           variant: "destructive"
         });
         continue;
@@ -203,11 +206,11 @@ export default function NannyForm() {
       return;
     }
 
-    // Check file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
+    // Check file size (15MB max)
+    if (file.size > 15 * 1024 * 1024) {
       toast({
         title: "Fichier trop volumineux",
-        description: `${file.name} dépasse la limite de 5MB`,
+        description: `${file.name} dépasse la limite de 15MB`,
         variant: "destructive"
       });
       return;
@@ -509,7 +512,7 @@ export default function NannyForm() {
                     📸 <strong>Pour garantir la sécurité des familles</strong>, veuillez télécharger une photo claire et lisible du <strong>RECTO</strong> et du <strong>VERSO</strong> de votre carte d'identité nationale (CNI).
                   </p>
                   <p className="text-xs text-blue-700 mt-2">
-                    Formats acceptés : JPG, PNG (max 5MB par photo)
+                    Formats acceptés : JPG, PNG (max 15MB par photo)
                   </p>
                 </div>
 
@@ -551,7 +554,7 @@ export default function NannyForm() {
                         <>
                           <FileUp className="w-10 h-10 text-muted-foreground mb-2 mx-auto" />
                           <p className="text-sm font-medium mb-1">Cliquez pour uploader le RECTO</p>
-                          <p className="text-xs text-muted-foreground">JPG ou PNG, max 5MB</p>
+                          <p className="text-xs text-muted-foreground">JPG ou PNG, max 15MB</p>
                         </>
                       )}
                     </div>
@@ -596,7 +599,7 @@ export default function NannyForm() {
                         <>
                           <FileUp className="w-10 h-10 text-muted-foreground mb-2 mx-auto" />
                           <p className="text-sm font-medium mb-1">Cliquez pour uploader le VERSO</p>
-                          <p className="text-xs text-muted-foreground">JPG ou PNG, max 5MB</p>
+                          <p className="text-xs text-muted-foreground">JPG ou PNG, max 15MB</p>
                         </>
                       )}
                     </div>
@@ -661,7 +664,7 @@ export default function NannyForm() {
                     <>
                       <FileUp className="w-12 h-12 text-muted-foreground mb-3 mx-auto" />
                       <p className="font-medium mb-1">Ajouter des documents</p>
-                      <p className="text-sm text-muted-foreground mb-3">CV, Diplômes, Références (PDF, JPG, PNG - max 5MB)</p>
+                      <p className="text-sm text-muted-foreground mb-3">CV, Diplômes, Références (PDF, JPG, PNG - max 15MB)</p>
                       <div className="service-badge">
                         <Check className="w-3 h-3 mr-1 inline" />
                         Cliquez pour ajouter

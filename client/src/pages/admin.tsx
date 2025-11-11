@@ -45,7 +45,8 @@ import type {
   ParentRequestStatus,
   NannyApplicationStatus,
   Notification,
-  Employee
+  Employee,
+  Client
 } from "@shared/schema";
 
 function NotificationCenter({ 
@@ -271,6 +272,10 @@ export default function AdminDashboard() {
 
   const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
     queryKey: ["/api/employees"],
+  });
+
+  const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
   });
 
   // Fetch employee's related application when selected
@@ -577,6 +582,77 @@ export default function AdminDashboard() {
     },
   });
 
+  const acceptParentRequestMutation = useMutation({
+    mutationFn: async (requestId: string) => {
+      const response = await apiRequest("POST", `/api/parent-requests/${requestId}/accept`, {});
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur lors de l'acceptation");
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/parent-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: "Demande acceptée",
+        description: "Le client a été créé avec succès",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'accepter la demande",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const rejectParentRequestMutation = useMutation({
+    mutationFn: async (requestId: string) => {
+      const response = await apiRequest("POST", `/api/parent-requests/${requestId}/reject`, {});
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur lors du refus");
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/parent-requests"] });
+      toast({
+        title: "Demande refusée",
+        description: "La demande a été supprimée",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de refuser la demande",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteClientMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      await apiRequest("DELETE", `/api/clients/${clientId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: "Client supprimé",
+        description: "Le client a été retiré avec succès",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer le client",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteContactMessageMutation = useMutation({
     mutationFn: async (messageId: string) => {
       await apiRequest("DELETE", `/api/contact-messages/${messageId}`, {});
@@ -789,12 +865,15 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="parents" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsList className="grid w-full grid-cols-5 gap-1">
             <TabsTrigger value="parents" data-testid="tab-parents" className="px-2 text-xs sm:text-sm truncate">
-              <span className="truncate">Demandes Parents</span>
+              <span className="truncate">Demandes</span>
+            </TabsTrigger>
+            <TabsTrigger value="clients" data-testid="tab-clients" className="px-2 text-xs sm:text-sm truncate">
+              <span className="truncate">Clients</span>
             </TabsTrigger>
             <TabsTrigger value="nannies" data-testid="tab-nannies" className="px-2 text-xs sm:text-sm truncate">
-              <span className="truncate">Candidatures</span>
+              <span className="truncate">Nounous</span>
             </TabsTrigger>
             <TabsTrigger value="employees" data-testid="tab-employees" className="px-2 text-xs sm:text-sm truncate">
               <span className="truncate">Employés</span>
@@ -898,10 +977,97 @@ export default function AdminDashboard() {
                             </div>
                           )}
                         </div>
+                        <div className="flex gap-2 mt-4 pt-3 border-t">
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              acceptParentRequestMutation.mutate(request.id);
+                            }}
+                            disabled={acceptParentRequestMutation.isPending}
+                            className="flex-1"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Accepter
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm("Voulez-vous vraiment refuser cette demande ? Elle sera supprimée.")) {
+                                rejectParentRequestMutation.mutate(request.id);
+                              }
+                            }}
+                            disabled={rejectParentRequestMutation.isPending}
+                            className="flex-1"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Refuser
+                          </Button>
+                        </div>
                       </CardContent>
                     </CollapsibleContent>
                   </Card>
                 </Collapsible>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="clients" className="space-y-4 mt-4">
+            {clientsLoading ? (
+              <p className="text-center text-muted-foreground">Chargement...</p>
+            ) : clients.length === 0 ? (
+              <p className="text-center text-muted-foreground">Aucun client pour le moment</p>
+            ) : (
+              clients.map((client) => (
+                <Card key={client.id}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base font-medium">
+                          {client.nom}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {client.typeService} - {client.forfait}
+                        </p>
+                        <Badge variant={client.actif ? "default" : "secondary"} className="mt-2">
+                          {client.actif ? "Actif" : "Inactif"}
+                        </Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          if (confirm(`Voulez-vous vraiment supprimer le client ${client.nom} ?`)) {
+                            deleteClientMutation.mutate(client.id);
+                          }
+                        }}
+                        disabled={deleteClientMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <Phone className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <span>{client.telephone}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <span>{client.adresse}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Baby className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <span>{client.nombreEnfants} enfant(s)</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <span>Inscrit le {client.dateInscription ? new Date(client.dateInscription).toLocaleDateString('fr-FR') : 'N/A'}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               ))
             )}
           </TabsContent>
