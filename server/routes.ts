@@ -1182,9 +1182,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const clientData = insertClientSchema.parse({
         demandeId: demande.id,
         nom: demande.nom,
+        email: demande.email,
         telephone: demande.telephone,
         adresse: demande.adresse,
+        ville: demande.ville,
+        quartier: demande.quartier,
         nombreEnfants: demande.nombreEnfants,
+        agesEnfants: demande.agesEnfants,
         typeService: demande.typeService,
         horaireDebut: demande.horaireDebut,
         horaireFin: demande.horaireFin,
@@ -1222,10 +1226,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       
-      // Supprimer la demande refusée
-      await storage.deleteParentRequest(id);
+      // Changer le statut à "refuse" au lieu de supprimer
+      await storage.updateParentRequestStatus(id, "refuse");
       
-      res.json({ message: "Demande refusée et supprimée" });
+      res.json({ message: "Demande refusée" });
     } catch (error) {
       if (error instanceof Error && error.message.includes("not found")) {
         return res.status(404).json({ message: error.message });
