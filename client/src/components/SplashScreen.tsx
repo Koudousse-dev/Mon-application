@@ -67,7 +67,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
               <img
                 src="/logo-splash.png"
                 alt="Dieu veille sur nos enfants"
-                className="w-32 h-32 drop-shadow-2xl"
+                className="w-20 h-20 drop-shadow-2xl"
               />
             </motion.div>
 
