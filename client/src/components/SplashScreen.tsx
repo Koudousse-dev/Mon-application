@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import logoSplash from "../assets/logo-splash.png";
 
 export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -64,33 +65,11 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
               }}
               className="flex items-center gap-3"
             >
-              <div className="w-16 h-16 rounded-full bg-white shadow-2xl flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="w-10 h-10 text-primary"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 2C10.8954 2 10 2.89543 10 4V6H14V4C14 2.89543 13.1046 2 12 2Z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M12 20C13.1046 20 14 19.1046 14 18V16H10V18C10 19.1046 10.8954 20 12 20Z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M8 8C6.89543 8 6 8.89543 6 10V14C6 15.1046 6.89543 16 8 16C9.10457 16 10 15.1046 10 14V10C10 8.89543 9.10457 8 8 8Z"
-                    fill="currentColor"
-                    opacity="0.7"
-                  />
-                  <path
-                    d="M16 8C14.8954 8 14 8.89543 14 10V14C14 15.1046 14.8954 16 16 16C17.1046 16 18 15.1046 18 14V10C18 8.89543 17.1046 8 16 8Z"
-                    fill="currentColor"
-                    opacity="0.7"
-                  />
-                </svg>
-              </div>
+              <img
+                src={logoSplash}
+                alt="Dieu veille sur nos enfants"
+                className="w-32 h-32 drop-shadow-2xl"
+              />
             </motion.div>
 
             <div className="text-center">
