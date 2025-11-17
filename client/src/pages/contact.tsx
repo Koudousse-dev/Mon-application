@@ -33,6 +33,7 @@ export default function Contact() {
 
   const email = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "email")?.valeur || "contact@gardedesenfantsgabon.com");
   const telephone = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "telephone")?.valeur || "+241 XX XX XX XX");
+  const telephone2 = parametres.find(p => p.cle === "telephone2")?.valeur || "";
   const adresse = parametresLoading ? "Chargement..." : (parametres.find(p => p.cle === "adresse")?.valeur || "Libreville, Gabon");
 
   const form = useForm({
@@ -150,7 +151,7 @@ export default function Contact() {
             </CardContent>
           </Card>
 
-          {/* Phone */}
+          {/* Phone 1 */}
           <Card data-testid="contact-phone">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -164,6 +165,23 @@ export default function Contact() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Phone 2 - Only show if exists */}
+          {telephone2 && !parametresLoading && (
+            <Card data-testid="contact-phone2">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="icon-circle bg-accent/30 shrink-0">
+                    <Phone className="text-accent-foreground w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-muted-foreground mb-1">Téléphone 2</p>
+                    <p className="font-semibold">{telephone2}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Address */}
           <Card data-testid="contact-address">

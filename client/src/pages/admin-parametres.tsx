@@ -23,6 +23,7 @@ export default function AdminParametres() {
   const [formData, setFormData] = useState({
     email: "",
     telephone: "",
+    telephone2: "",
     adresse: "",
   });
 
@@ -36,11 +37,13 @@ export default function AdminParametres() {
     if (parametres.length > 0) {
       const emailParam = parametres.find(p => p.cle === "email");
       const telephoneParam = parametres.find(p => p.cle === "telephone");
+      const telephone2Param = parametres.find(p => p.cle === "telephone2");
       const adresseParam = parametres.find(p => p.cle === "adresse");
 
       setFormData({
         email: emailParam?.valeur || "",
         telephone: telephoneParam?.valeur || "",
+        telephone2: telephone2Param?.valeur || "",
         adresse: adresseParam?.valeur || "",
       });
     }
@@ -57,6 +60,7 @@ export default function AdminParametres() {
       // Check which parameters exist in fresh data
       const emailExists = freshParametres.find(p => p.cle === "email");
       const telephoneExists = freshParametres.find(p => p.cle === "telephone");
+      const telephone2Exists = freshParametres.find(p => p.cle === "telephone2");
       const adresseExists = freshParametres.find(p => p.cle === "adresse");
 
       // Create or update each parameter (apiRequest throws if not ok)
@@ -71,6 +75,12 @@ export default function AdminParametres() {
           const res = telephoneExists
             ? await apiRequest("PATCH", "/api/parametres-site/telephone", { valeur: data.telephone })
             : await apiRequest("POST", "/api/parametres-site", { cle: "telephone", valeur: data.telephone });
+          return res.json();
+        })(),
+        (async () => {
+          const res = telephone2Exists
+            ? await apiRequest("PATCH", "/api/parametres-site/telephone2", { valeur: data.telephone2 })
+            : await apiRequest("POST", "/api/parametres-site", { cle: "telephone2", valeur: data.telephone2 });
           return res.json();
         })(),
         (async () => {
@@ -158,7 +168,7 @@ export default function AdminParametres() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="telephone">Téléphone de contact</Label>
+                  <Label htmlFor="telephone">Téléphone de contact 1</Label>
                   <Input
                     id="telephone"
                     type="tel"
@@ -167,6 +177,18 @@ export default function AdminParametres() {
                     placeholder="+241 XX XX XX XX"
                     required
                     data-testid="input-telephone"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telephone2">Téléphone de contact 2</Label>
+                  <Input
+                    id="telephone2"
+                    type="tel"
+                    value={formData.telephone2}
+                    onChange={(e) => handleInputChange("telephone2", e.target.value)}
+                    placeholder="+241 XX XX XX XX (optionnel)"
+                    data-testid="input-telephone2"
                   />
                 </div>
 
