@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoSplash from "../assets/logo-splash.png";
 
 export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -66,7 +65,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
               className="flex items-center gap-3"
             >
               <img
-                src={logoSplash}
+                src="/logo-splash.png"
                 alt="Dieu veille sur nos enfants"
                 className="w-32 h-32 drop-shadow-2xl"
               />
