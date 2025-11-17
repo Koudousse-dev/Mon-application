@@ -15,7 +15,7 @@ import { insertNannyApplicationSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
-import nannyFormImage from "@assets/stock_images/professional_african_fd0ffe5f.jpg";
+import nannyFormImage from "@assets/stock_images/happy_african_mother.jpg";
 import BannerImageEditor from "@/components/admin/BannerImageEditor";
 import { useBannerImage } from "@/hooks/useBannerImage";
 

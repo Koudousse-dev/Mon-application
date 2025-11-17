@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { insertParentRequestSchema, type Prestation } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
-import parentFormImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jpg";
+import parentFormImage from "@assets/stock_images/happy_african_family.jpg";
 import BannerImageEditor from "@/components/admin/BannerImageEditor";
 import { useBannerImage } from "@/hooks/useBannerImage";
 

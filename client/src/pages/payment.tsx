@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { processPayment } from "@/lib/payment";
 import BannerImageEditor from "@/components/admin/BannerImageEditor";
 import { useBannerImage } from "@/hooks/useBannerImage";
-import paymentImage from "@assets/stock_images/warm_african_mother__19616505.jpg";
+import paymentImage from "@assets/stock_images/happy_african_man.jpg";
 
 export default function Payment() {
   const { data: authData } = useQuery<any>({

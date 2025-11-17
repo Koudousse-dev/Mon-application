@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { insertContactMessageSchema, type ParametreSite } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { localStorage } from "@/lib/storage";
-import contactImage from "@assets/stock_images/warm_african_mother__19616505.jpg";
+import contactImage from "@assets/stock_images/happy_african_faamily.jpg";
 import BannerImageEditor from "@/components/admin/BannerImageEditor";
 import { useBannerImage } from "@/hooks/useBannerImage";
 

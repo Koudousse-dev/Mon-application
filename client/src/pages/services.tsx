@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Prestation } from "@shared/schema";
 import BannerImageEditor from "@/components/admin/BannerImageEditor";
 import { useBannerImage } from "@/hooks/useBannerImage";
-import servicesImage from "@assets/stock_images/happy_african_childr_f11fd4ba.jpg";
+import servicesImage from "@assets/stock_images/happy_african_family_with_child.jpg";
 
 export default function Services() {
   const [, setLocation] = useLocation();
